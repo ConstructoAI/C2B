@@ -1,0 +1,769 @@
+/* style.css - Système d'Approbation Soumissions Entreprises */
+
+/* === VARIABLES CSS SPÉCIFIQUES B2B === */
+:root {
+    /* Couleurs principales B2B - Plus corporate */
+    --primary-color: #1E40AF;
+    --primary-color-light: #60A5FA;
+    --primary-color-lighter: #DBEAFE;
+    --primary-color-darker: #1E3A8A;
+    --primary-color-darkest: #1E3A8A;
+    
+    /* Couleurs secondaires B2B */
+    --secondary-color: #059669;
+    --secondary-color-light: #34D399;
+    --secondary-color-lighter: #D1FAE5;
+    
+    /* Couleurs d'accent B2B */
+    --accent-color: #7C3AED;
+    --accent-color-light: #A78BFA;
+    --accent-color-lighter: #EDE9FE;
+    
+    /* Couleurs entreprises */
+    --client-color: #1E40AF;
+    --prestataire-color: #059669;
+    --admin-color: #7C3AED;
+    
+    /* Backgrounds */
+    --background-color: #F8FAFC;
+    --secondary-background-color: #F1F5F9;
+    --card-background: #FFFFFF;
+    --content-background: #FFFFFF;
+    
+    /* Texte */
+    --text-color: #0F172A;
+    --text-color-light: #475569;
+    --text-color-muted: #94A3B8;
+    
+    /* Bordures */
+    --border-color: #E2E8F0;
+    --border-color-light: #F1F5F9;
+    --border-color-blue: #DBEAFE;
+    
+    /* Statuts d'approbation */
+    --status-brouillon: #94A3B8;
+    --status-soumise: #3B82F6;
+    --status-evaluation: #F59E0B;
+    --status-approbation: #8B5CF6;
+    --status-approuvee: #22C55E;
+    --status-rejetee: #EF4444;
+    --status-negociation: #EC4899;
+    --status-acceptee: #16A34A;
+    
+    /* Propriétés générales */
+    --border-radius-sm: 0.375rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    --font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    --box-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --box-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --box-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+    --box-shadow-blue: 0 4px 12px rgba(30, 64, 175, 0.15);
+    --animation-speed: 0.3s;
+    
+    /* Dégradés B2B */
+    --primary-gradient: linear-gradient(135deg, #1E40AF 0%, #0F172A 100%);
+    --secondary-gradient: linear-gradient(135deg, #DBEAFE 0%, #FFFFFF 100%);
+    --card-gradient: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+    --client-gradient: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+    --prestataire-gradient: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    --admin-gradient: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+}
+
+/* === RESET ET BASE === */
+body {
+    font-family: var(--font-family) !important;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family) !important;
+    font-weight: 700 !important;
+    color: var(--text-color);
+    margin-bottom: 0.8em;
+    line-height: 1.3;
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse-approval {
+    0% { box-shadow: 0 0 0 0 rgba(30, 64, 175, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(30, 64, 175, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(30, 64, 175, 0); }
+}
+
+/* === SIDEBAR === */
+section[data-testid="stSidebar"] {
+    background: var(--card-gradient);
+    border-right: 1px solid var(--border-color-blue);
+    padding: 1.5rem;
+    box-shadow: 2px 0 10px rgba(30, 64, 175, 0.08);
+}
+
+/* === HEADER PRINCIPAL === */
+.main-header {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.3) 0%, #1E40AF 15%, #0F172A 85%, rgba(0, 0, 0, 0.4) 100%) !important;
+    padding: 25px 30px !important;
+    border-radius: 16px !important;
+    color: white !important;
+    text-align: center !important;
+    margin-bottom: 30px !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -2px 0 rgba(0, 0, 0, 0.2) !important;
+    animation: fadeIn 0.8s ease-out !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.main-header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    animation: header-shine 4s infinite;
+    z-index: 1;
+}
+
+@keyframes header-shine {
+    0%, 50% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.main-header h1, .main-header h2, .main-header p {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.main-header h1, .main-header h2 {
+    margin: 0 !important;
+    font-size: 2.2rem !important;
+    font-weight: 700 !important;
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+.main-header p {
+    margin-top: 12px !important;
+    margin-bottom: 0 !important;
+    font-size: 1.1rem !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    font-weight: 500 !important;
+}
+
+/* === BOUTONS B2B === */
+.stButton > button {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, var(--primary-color) 20%, var(--primary-color-darker) 80%, rgba(0, 0, 0, 0.2) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-md);
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all var(--animation-speed) ease;
+    box-shadow: 0 4px 8px rgba(30, 64, 175, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, #3B82F6 20%, var(--primary-color-darker) 80%, rgba(0, 0, 0, 0.3) 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(30, 64, 175, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Boutons spécifiques aux rôles */
+.btn-client {
+    background: var(--client-gradient) !important;
+}
+
+.btn-prestataire {
+    background: var(--prestataire-gradient) !important;
+}
+
+.btn-admin {
+    background: var(--admin-gradient) !important;
+}
+
+/* Boutons d'action workflow */
+div.stButton > button:has(span:contains("Approuver")) {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, #22C55E 15%, #16A34A 85%, rgba(0, 0, 0, 0.2) 100%) !important;
+    color: white !important;
+}
+
+div.stButton > button:has(span:contains("Rejeter")) {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, #EF4444 15%, #DC2626 85%, rgba(0, 0, 0, 0.2) 100%) !important;
+    color: white !important;
+}
+
+div.stButton > button:has(span:contains("En négociation")) {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, #EC4899 15%, #DB2777 85%, rgba(0, 0, 0, 0.2) 100%) !important;
+    color: white !important;
+}
+
+/* === CARDS SPÉCIFIQUES B2B === */
+.demande-card, .soumission-card, .entreprise-card {
+    background: var(--content-background);
+    border-radius: var(--border-radius-xl);
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: var(--box-shadow-sm);
+    transition: all var(--animation-speed) ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.6s ease-out;
+}
+
+.demande-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--client-gradient);
+    border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+}
+
+.soumission-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--prestataire-gradient);
+    border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+}
+
+.entreprise-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--admin-gradient);
+    border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+}
+
+.demande-card:hover, .soumission-card:hover, .entreprise-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: var(--secondary-gradient);
+    border-color: var(--primary-color-light);
+    box-shadow: var(--box-shadow-lg);
+}
+
+/* === STATUTS WORKFLOW D'APPROBATION === */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    gap: 6px;
+    margin: 2px;
+}
+
+.status-brouillon {
+    background: linear-gradient(135deg, #F1F5F9 0%, #FFFFFF 100%);
+    color: var(--status-brouillon);
+    border: 1px solid #CBD5E1;
+}
+
+.status-brouillon::before { content: "📝"; }
+
+.status-soumise {
+    background: linear-gradient(135deg, #DBEAFE 0%, #FFFFFF 100%);
+    color: var(--status-soumise);
+    border: 1px solid #93C5FD;
+}
+
+.status-soumise::before { content: "📤"; }
+
+.status-recue {
+    background: linear-gradient(135deg, #DBEAFE 0%, #FFFFFF 100%);
+    color: var(--status-soumise);
+    border: 1px solid #93C5FD;
+}
+
+.status-recue::before { content: "📥"; }
+
+.status-en-evaluation {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%);
+    color: var(--status-evaluation);
+    border: 1px solid #FCD34D;
+}
+
+.status-en-evaluation::before { content: "🔍"; }
+
+.status-en-approbation {
+    background: linear-gradient(135deg, #EDE9FE 0%, #FFFFFF 100%);
+    color: var(--status-approbation);
+    border: 1px solid #C4B5FD;
+}
+
+.status-en-approbation::before { content: "⏳"; }
+
+.status-approuvee {
+    background: linear-gradient(135deg, #DCFCE7 0%, #FFFFFF 100%);
+    color: var(--status-approuvee);
+    border: 1px solid #86EFAC;
+    animation: pulse-approval 2s infinite;
+}
+
+.status-approuvee::before { content: "✅"; }
+
+.status-rejetee {
+    background: linear-gradient(135deg, #FEE2E2 0%, #FFFFFF 100%);
+    color: var(--status-rejetee);
+    border: 1px solid #FCA5A5;
+}
+
+.status-rejetee::before { content: "❌"; }
+
+.status-en-negociation {
+    background: linear-gradient(135deg, #FCE7F3 0%, #FFFFFF 100%);
+    color: var(--status-negociation);
+    border: 1px solid #F9A8D4;
+}
+
+.status-en-negociation::before { content: "💬"; }
+
+.status-acceptee {
+    background: linear-gradient(135deg, #D1FAE5 0%, #FFFFFF 100%);
+    color: var(--status-acceptee);
+    border: 1px solid #6EE7B7;
+    animation: pulse-approval 3s infinite;
+}
+
+.status-acceptee::before { content: "🎉"; }
+
+/* === BADGES BUDGET B2B === */
+.budget-enterprise {
+    background: #7C3AED;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.budget-high {
+    background: #059669;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.budget-medium {
+    background: #F59E0B;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.budget-low {
+    background: #6B7280;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* === ÉTAPES WORKFLOW === */
+.workflow-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--secondary-background-color);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.workflow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    position: relative;
+}
+
+.workflow-step::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 1;
+}
+
+.workflow-step:last-child::after {
+    display: none;
+}
+
+.workflow-step.active {
+    color: var(--primary-color);
+}
+
+.workflow-step.active .step-number {
+    background: var(--primary-color);
+    color: white;
+}
+
+.workflow-step.completed {
+    color: var(--secondary-color);
+}
+
+.workflow-step.completed .step-number {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--border-color);
+    color: var(--text-color-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    z-index: 2;
+    position: relative;
+    transition: all var(--animation-speed) ease;
+}
+
+.step-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.step-description {
+    font-size: 0.75rem;
+    color: var(--text-color-muted);
+}
+
+/* === STATS CARDS B2B === */
+.stat-card {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    text-align: center;
+    margin: 0.5rem;
+    box-shadow: var(--box-shadow-md);
+    transition: all var(--animation-speed);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+    transition: left 0.6s ease;
+    z-index: 1;
+}
+
+.stat-card:hover::before { left: 100%; }
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-blue);
+}
+
+.stat-card h2, .stat-card h3, .stat-card p {
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    color: white;
+}
+
+.stat-card.client-stats {
+    background: var(--client-gradient);
+}
+
+.stat-card.prestataire-stats {
+    background: var(--prestataire-gradient);
+}
+
+.stat-card.admin-stats {
+    background: var(--admin-gradient);
+}
+
+/* === FORMULAIRES B2B === */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea,
+.stSelectbox > div {
+    border-radius: var(--border-radius-md) !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--content-background) !important;
+    padding: 0.75rem 1rem !important;
+    transition: all var(--animation-speed) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    font-family: var(--font-family) !important;
+}
+
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* === FILE UPLOADER B2B === */
+.stFileUploader {
+    border: 2px dashed var(--border-color-blue);
+    border-radius: var(--border-radius-md);
+    background: var(--content-background);
+    padding: 2rem;
+    transition: all var(--animation-speed) ease;
+    margin-top: 0.5rem;
+    box-shadow: var(--box-shadow-sm);
+    text-align: center;
+}
+
+.stFileUploader:hover {
+    border-color: var(--primary-color-light);
+    background: var(--primary-color-lighter);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-blue);
+}
+
+/* === ÉVALUATIONS === */
+.evaluation-criteria {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.criteria-card {
+    background: var(--content-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    transition: all var(--animation-speed) ease;
+}
+
+.criteria-card:hover {
+    border-color: var(--primary-color-light);
+    box-shadow: var(--box-shadow-md);
+    transform: translateY(-2px);
+}
+
+.criteria-name {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.criteria-score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.score-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    width: 20px;
+    height: 20px;
+    color: #D1D5DB;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.star.filled {
+    color: #F59E0B;
+}
+
+.star:hover {
+    color: #F59E0B;
+}
+
+/* === TABLEAUX B2B === */
+.stDataFrame table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 1rem 0 !important;
+    font-size: 14px !important;
+    background: white !important;
+    border-radius: var(--border-radius-md) !important;
+    overflow: hidden !important;
+    box-shadow: var(--box-shadow-sm) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.stDataFrame table th {
+    background: var(--primary-color) !important;
+    color: white !important;
+    padding: 1rem 0.75rem !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    text-align: left !important;
+    border: none !important;
+}
+
+.stDataFrame table td {
+    padding: 0.875rem 0.75rem !important;
+    border-bottom: 1px solid var(--border-color-light) !important;
+    font-size: 13px !important;
+    vertical-align: top !important;
+}
+
+.stDataFrame table tr:nth-child(even) td {
+    background: var(--secondary-background-color) !important;
+}
+
+.stDataFrame table tr:hover td {
+    background: var(--primary-color-lighter) !important;
+}
+
+/* === ALERTES B2B === */
+.stAlert {
+    border-radius: var(--border-radius-md);
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    animation: fadeIn 0.5s ease-out;
+    border: 1px solid;
+    font-family: var(--font-family);
+}
+
+[data-testid="stAlert"][kind="success"] {
+    background: linear-gradient(to right, #D1FAE5, #ffffff);
+    border-color: #6EE7B7;
+    color: #065F46;
+}
+
+[data-testid="stAlert"][kind="error"] {
+    background: linear-gradient(to right, #FEE2E2, #ffffff);
+    border-color: #FCA5A5;
+    color: #991B1B;
+}
+
+[data-testid="stAlert"][kind="warning"] {
+    background: linear-gradient(to right, #FEF3C7, #ffffff);
+    border-color: #FCD34D;
+    color: #92400E;
+}
+
+[data-testid="stAlert"][kind="info"] {
+    background: linear-gradient(to right, #DBEAFE, #ffffff);
+    border-color: #93C5FD;
+    color: #1E3A8A;
+}
+
+/* === RESPONSIVE B2B === */
+@media (max-width: 768px) {
+    body { 
+        padding: 5px !important; 
+        font-size: 14px !important;
+    }
+    
+    .main-header {
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        border-radius: 10px !important;
+    }
+    
+    .main-header h1, .main-header h2 { 
+        font-size: 1.5rem !important; 
+    }
+    
+    .main-header p { 
+        font-size: 0.9rem !important; 
+    }
+    
+    .workflow-steps {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .workflow-step::after {
+        display: none;
+    }
+    
+    .evaluation-criteria {
+        grid-template-columns: 1fr;
+    }
+    
+    .demande-card, .soumission-card, .entreprise-card {
+        padding: 15px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .stat-card {
+        margin: 0.25rem !important;
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header h1, .main-header h2 { 
+        font-size: 1.2rem !important; 
+    }
+    
+    .main-header p { 
+        font-size: 0.85rem !important; 
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+}
+
+/* === FOOTER === */
+.footer-container {
+    margin-top: 40px;
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.875rem;
+    color: var(--text-color-light);
+    text-align: center;
+    background: var(--secondary-gradient);
+    border-radius: var(--border-radius-md);
+}

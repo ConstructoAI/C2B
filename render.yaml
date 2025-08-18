@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: soumissions-entreprises
+    env: python
+    plan: starter
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      python init_db_approbation.py
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false
+    envVars:
+      - key: DATA_DIR
+        value: /opt/render/project/data
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: STREAMLIT_SERVER_PORT
+        value: $PORT
+    disk:
+      name: data-disk
+      mountPath: /opt/render/project/data
+      sizeGB: 10
