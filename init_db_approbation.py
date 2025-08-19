@@ -43,29 +43,27 @@ def init_database_approbation():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
-    # Table des clients particuliers (qui demandent des devis)
+    # Table des entreprises clientes (qui demandent des devis)
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS clients_particuliers (
+        CREATE TABLE IF NOT EXISTS entreprises_clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            prenom TEXT NOT NULL,
-            nom TEXT NOT NULL,
+            nom_entreprise TEXT NOT NULL,
+            secteur_activite TEXT NOT NULL,
+            taille_entreprise TEXT NOT NULL,
+            nom_contact TEXT NOT NULL,
+            poste_contact TEXT,
             email TEXT UNIQUE NOT NULL,
             telephone TEXT NOT NULL,
             adresse TEXT,
             ville TEXT,
             code_postal TEXT,
-            province TEXT DEFAULT 'Québec',
+            numero_entreprise TEXT,
+            site_web TEXT,
+            description_entreprise TEXT,
             mot_de_passe_hash TEXT NOT NULL,
-            date_naissance DATE,
-            profession TEXT,
-            situation_familiale TEXT,  -- célibataire, marié, etc.
-            type_propriete TEXT,  -- maison, condo, duplex, etc.
+            statut TEXT DEFAULT 'actif' CHECK(statut IN ('actif', 'inactif', 'suspendu')),
             date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            statut TEXT DEFAULT 'actif',  -- actif, inactif, suspendu
-            derniere_connexion TIMESTAMP,
-            preferences_notification TEXT,  -- JSON des préférences
-            budget_annuel_travaux REAL DEFAULT 0.0,
-            projets_realises INTEGER DEFAULT 0
+            date_derniere_connexion TIMESTAMP
         )
     ''')
     
@@ -146,7 +144,7 @@ def init_database_approbation():
             priorite TEXT DEFAULT 'normale',  -- faible, normale, elevee, urgente
             confidentiel BOOLEAN DEFAULT 0,
             accord_nda_requis BOOLEAN DEFAULT 0,
-            FOREIGN KEY (client_id) REFERENCES clients_particuliers (id)
+            FOREIGN KEY (client_id) REFERENCES entreprises_clientes (id)
         )
     ''')
     
@@ -314,7 +312,7 @@ def init_database_approbation():
             notes_suivi TEXT,
             FOREIGN KEY (demande_id) REFERENCES demandes_devis (id),
             FOREIGN KEY (soumission_id) REFERENCES soumissions (id),
-            FOREIGN KEY (client_id) REFERENCES clients_particuliers (id),
+            FOREIGN KEY (client_id) REFERENCES entreprises_clientes (id),
             FOREIGN KEY (prestataire_id) REFERENCES entreprises_prestataires (id)
         )
     ''')
@@ -354,57 +352,68 @@ def init_database_approbation():
     # Clients particuliers de démonstration
     clients_demo = [
         {
-            'prenom': 'Marie',
-            'nom': 'Dubois',
-            'email': 'marie.dubois@gmail.com',
+            'nom_entreprise': 'TechnoSolutions Inc.',
+            'secteur_activite': 'Développement immobilier résidentiel',
+            'taille_entreprise': 'PME (10-249 employés)',
+            'nom_contact': 'Marie Dubois',
+            'poste_contact': 'Directrice des projets',
+            'email': 'marie.dubois@technosolutions.ca',
             'telephone': '514-555-1001',
             'adresse': '1234 Rue Saint-Laurent',
             'ville': 'Montréal',
             'code_postal': 'H2X 1A1',
             'mot_de_passe': 'demo123',
-            'profession': 'Enseignante',
-            'situation_familiale': 'Mariée',
-            'type_propriete': 'Maison unifamiliale'
+            'numero_entreprise': '1234567890',
+            'site_web': 'https://www.technosolutions.ca',
+            'description_entreprise': 'Entreprise spécialisée dans les projets résidentiels et rénovations'
         },
         {
-            'prenom': 'Jean',
-            'nom': 'Tremblay',
-            'email': 'jean.tremblay@outlook.com',
+            'nom_entreprise': 'Commerce Plus Ltée',
+            'secteur_activite': 'Centres commerciaux et retail',
+            'taille_entreprise': 'ETI (250-4999 employés)',
+            'nom_contact': 'Jean Tremblay',
+            'poste_contact': 'Directeur des infrastructures',
+            'email': 'jean.tremblay@commerceplus.ca',
             'telephone': '418-555-2002',
             'adresse': '567 Boulevard Charest Est',
             'ville': 'Québec',
             'code_postal': 'G1K 1A1',
             'mot_de_passe': 'demo123',
-            'profession': 'Ingénieur',
-            'situation_familiale': 'Célibataire',
-            'type_propriete': 'Condo'
+            'numero_entreprise': '2345678901',
+            'site_web': 'https://www.commerceplus.ca',
+            'description_entreprise': 'Développeur de centres commerciaux et espaces retail'
         },
         {
-            'prenom': 'Sophie',
-            'nom': 'Lavoie',
-            'email': 'sophie.lavoie@hotmail.com',
+            'nom_entreprise': 'FinanceConseil Pro',
+            'secteur_activite': 'Bureaux et tours à bureaux',
+            'taille_entreprise': 'TPE (1-9 employés)',
+            'nom_contact': 'Sophie Lavoie',
+            'poste_contact': 'Gestionnaire des installations',
+            'email': 'sophie.lavoie@financeconseil.ca',
             'telephone': '450-555-3003',
             'adresse': '890 Rue de la Paix',
             'ville': 'Laval',
             'code_postal': 'H7T 1A1',
             'mot_de_passe': 'demo123',
-            'profession': 'Infirmière',
-            'situation_familiale': 'Divorcée avec enfants',
-            'type_propriete': 'Duplex'
+            'numero_entreprise': '3456789012',
+            'site_web': 'https://www.financeconseil.ca',
+            'description_entreprise': 'Cabinet de conseil financier avec bureaux modernes'
         }
     ]
     
-    # Insérer les clients particuliers
+    # Insérer les entreprises clientes
     for client in clients_demo:
         cursor.execute('''
-            INSERT INTO clients_particuliers (
-                prenom, nom, email, telephone, adresse, ville, code_postal,
-                mot_de_passe_hash, profession, situation_familiale, type_propriete
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO entreprises_clientes (
+                nom_entreprise, secteur_activite, taille_entreprise, nom_contact,
+                poste_contact, email, telephone, adresse, ville, code_postal,
+                mot_de_passe_hash, numero_entreprise, site_web, description_entreprise
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            client['prenom'], client['nom'], client['email'], client['telephone'],
+            client['nom_entreprise'], client['secteur_activite'], client['taille_entreprise'],
+            client['nom_contact'], client['poste_contact'], client['email'], client['telephone'],
             client['adresse'], client['ville'], client['code_postal'], hash_password(client['mot_de_passe']),
-            client['profession'], client['situation_familiale'], client['type_propriete']
+            client['numero_entreprise'], client['site_web'], client['description_entreprise']
         ))
     
     # Entreprises de construction de démonstration

@@ -245,7 +245,7 @@ def authentifier_client(email: str, mot_de_passe: str) -> Optional[dict]:
     cursor = conn.cursor()
     
     cursor.execute('''
-        SELECT * FROM clients_particuliers WHERE email = ? AND mot_de_passe_hash = ? AND statut = 'actif'
+        SELECT * FROM entreprises_clientes WHERE email = ? AND mot_de_passe_hash = ? AND statut = 'actif'
     ''', (email, hash_password(mot_de_passe)))
     
     result = cursor.fetchone()
