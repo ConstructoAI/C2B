@@ -12,52 +12,60 @@ def page_selection_inscription():
     """Page de sélection du type d'inscription"""
     st.markdown("""
     <div class="demande-card">
-        <h1>🏗️ Inscription - Le B2B de la Construction au Québec</h1>
-        <p>Rejoignez notre plateforme d'appels d'offres spécialisée en construction</p>
+        <h1>🏗️ Inscription CLIENT - PORTAIL C2B</h1>
+        <p>Créez votre compte client pour demander des soumissions à notre entreprise</p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("### 🎯 Choisissez votre type d'entreprise")
+    st.markdown("### 👤 Inscription pour CLIENTS uniquement")
     
-    col1, col2 = st.columns(2)
+    st.info("""
+    **Note importante:** Ce portail C2B est dédié à UNE SEULE entreprise de construction.
+    
+    Si vous êtes un **CLIENT** (particulier ou entreprise ayant besoin de travaux), vous pouvez vous inscrire ici.
+    
+    Si vous êtes un **ENTREPRENEUR** cherchant des opportunités, ce portail n'est pas pour vous.
+    """)
+    
+    col1, col2 = st.columns([2, 1])
     
     with col1:
-        if st.button("🏢 Entreprise Cliente", key="btn_client_inscription", use_container_width=True):
+        if st.button("👤 Je suis un CLIENT - Créer mon compte", key="btn_client_inscription", use_container_width=True, type="primary"):
             st.session_state.type_inscription = "client"
             st.session_state.page_inscription = "formulaire"
             st.rerun()
         
         st.markdown("""
-        **Vous êtes un donneur d'ouvrage ?**
-        - Publier des appels d'offres
-        - Recevoir des soumissions qualifiées
-        - Gérer vos projets de construction
-        - Évaluer et sélectionner vos entrepreneurs
+        **En tant que CLIENT, vous pourrez:**
+        - ✅ Demander des soumissions pour vos projets
+        - ✅ Recevoir des propositions personnalisées
+        - ✅ Communiquer directement avec notre entreprise
+        - ✅ Suivre l'avancement de vos demandes
+        - ✅ Accepter ou refuser les soumissions
+        - ✅ Gérer vos contrats et évaluations
         """)
     
     with col2:
-        if st.button("🔨 Entreprise Prestataire", key="btn_prestataire_inscription", use_container_width=True):
-            st.session_state.type_inscription = "prestataire"
-            st.session_state.page_inscription = "formulaire"
-            st.rerun()
+        st.warning("""
+        **⚠️ Entreprise unique**
         
-        st.markdown("""
-        **Vous êtes un entrepreneur certifié RBQ ?**
-        - Découvrir de nouvelles opportunités
-        - Soumissionner sur des projets qualifiés
-        - Développer votre portfolio
-        - Accroître votre visibilité
+        Notre entreprise:
+        **Construction Excellence Québec Inc.**
+        
+        RBQ: 5678-1234-01
+        
+        Toutes vos demandes seront traitées exclusivement par notre équipe.
         """)
     
     st.markdown("---")
     st.info("💡 **Déjà inscrit ?** Utilisez le bouton de connexion en haut de page")
 
 def formulaire_inscription_client():
-    """Formulaire d'inscription pour les entreprises clientes"""
+    """Formulaire d'inscription pour les clients (particuliers ou entreprises)"""
     st.markdown("""
     <div class="demande-card">
-        <h2>📝 Inscription Entreprise Cliente</h2>
-        <p>Accédez à notre réseau d'entrepreneurs certifiés RBQ</p>
+        <h2>📝 Inscription CLIENT</h2>
+        <p>Créez votre compte pour demander des soumissions à Construction Excellence Québec Inc.</p>
     </div>
     """, unsafe_allow_html=True)
     

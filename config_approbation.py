@@ -1,9 +1,9 @@
-# Configuration - Système de Soumissions Construction P2B Québec
+# Configuration - Système de Soumissions Construction C2B
 
 # Version du système
 VERSION = "2.0.0"
-NOM_SYSTEME = "ConstructionP2BQuébec"
-DESCRIPTION = "Plateforme de Soumissions Construction pour Particuliers au Québec"
+NOM_SYSTEME = "PortailC2BEntreprise"
+DESCRIPTION = "Plateforme de Soumissions Construction Client à Entreprise"
 
 # Configuration de la base de données
 DATABASE_FILE = "soumissions_entreprises.db"
@@ -14,13 +14,13 @@ REFERENCE_PREFIX = "SE"
 
 # Configuration Streamlit
 STREAMLIT_CONFIG = {
-    "page_title": "Construction Québec P2B - Plateforme pour Particuliers",
+    "page_title": "PORTAIL C2B DE L'ENTREPRISE - Client à Entreprise",
     "page_icon": "🏠",
     "layout": "wide",
     "initial_sidebar_state": "expanded"
 }
 
-# Types de projets construction résidentielle P2B
+# Types de projets construction résidentielle C2B
 TYPES_PROJETS = [
     "Rénovation salle de bain",
     "Rénovation cuisine",
@@ -71,7 +71,7 @@ SECTEURS_ACTIVITE = [
     "Autre secteur construction"
 ]
 
-# Tranches budgétaires construction résidentielle P2B
+# Tranches budgétaires construction résidentielle C2B
 TRANCHES_BUDGET = [
     "Moins de 1 000$",
     "1 000$ - 5 000$",
@@ -140,7 +140,7 @@ CRITERES_EVALUATION = [
     "Flexibilité et adaptabilité"
 ]
 
-# Rôles utilisateurs P2B
+# Rôles utilisateurs C2B
 ROLES_UTILISATEUR = {
     "client": "Particulier",
     "prestataire": "Entreprise de Construction", 
@@ -203,31 +203,31 @@ EMAIL_CONFIG = {
 
 # Messages système
 MESSAGES = {
-    "welcome_client": "Bienvenue sur la plateforme de soumissions B2B",
-    "welcome_prestataire": "Trouvez de nouveaux clients avec notre plateforme",
-    "demande_publiee": "Votre demande de devis a été publiée avec succès",
-    "soumission_envoyee": "Votre soumission a été envoyée et sera évaluée",
-    "soumission_approuvee": "Félicitations ! Votre soumission a été approuvée",
+    "welcome_client": "Bienvenue sur notre portail C2B - Demandez votre soumission",
+    "welcome_entreprise": "Espace entreprise - Gérez les demandes de vos clients",
+    "demande_envoyee": "Votre demande a été envoyée à notre entreprise",
+    "soumission_recue": "Vous avez reçu une soumission de notre entreprise",
+    "soumission_acceptee": "Félicitations ! Vous avez accepté notre soumission",
     "acces_refuse": "Accès refusé - Vérifiez vos identifiants"
 }
 
 # Configuration des notifications
 NOTIFICATIONS_CONFIG = {
-    "nouvelle_demande": "Nouvelle demande de devis disponible",
-    "soumission_recue": "Nouvelle soumission reçue pour votre demande",
-    "changement_statut": "Le statut de votre soumission a changé",
-    "deadline_approche": "Date limite de soumission dans 48h",
-    "approbation_requise": "Une soumission nécessite votre approbation",
-    "decision_prise": "Une décision a été prise sur votre soumission"
+    "nouvelle_demande_client": "Un client a envoyé une nouvelle demande",
+    "soumission_envoyee": "Notre entreprise vous a envoyé une soumission",
+    "client_accepte": "Le client a accepté votre soumission",
+    "client_refuse": "Le client a refusé votre soumission", 
+    "rappel_client": "N'oubliez pas de répondre à la soumission reçue",
+    "entreprise_repond": "L'entreprise a répondu à votre demande"
 }
 
 # Informations organisation
 ORGANISATION_INFO = {
-    "nom": "Construction Québec P2B - Services pour Particuliers",
+    "nom": "PORTAIL C2B DE L'ENTREPRISE - Services Client à Entreprise",
     "adresse": "1234 Boulevard René-Lévesque, Montréal, QC, H3A 1A1",
     "telephone": "(514) 555-0123",
-    "email": "info@constructionquebec.ca",
-    "site_web": "https://www.constructionquebec.ca"
+    "email": "info@portailc2b.ca",
+    "site_web": "https://www.portailc2b.ca"
 }
 
 # Configuration des rapports et analytics

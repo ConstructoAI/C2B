@@ -4,6 +4,7 @@ import hashlib
 import random
 import os
 from config_approbation import *
+from config_entreprise_unique import *
 
 # Configuration du stockage persistant
 DATA_DIR = os.getenv('DATA_DIR', os.path.join(os.getcwd(), 'data'))
@@ -416,66 +417,8 @@ def init_database_approbation():
             client['numero_entreprise'], client['site_web'], client['description_entreprise']
         ))
     
-    # Entreprises de construction de démonstration
-    prestataires_demo = [
-        {
-            'nom_entreprise': 'Construction Excellence Québec Inc.',
-            'numero_rbq': '5678-1234-01',
-            'domaines_expertise': '["Construction commerciale", "Construction industrielle", "Rénovation de bâtiments commerciaux"]',
-            'taille_entreprise': 'PME (10-249 employés)',
-            'nom_contact': 'Alex Martin',
-            'poste_contact': 'Directeur général',
-            'email': 'alex@constructionexcellence.ca',
-            'telephone': '514-555-4001',
-            'mot_de_passe': 'demo123',
-            'certifications': '["RBQ: 5678-1234-01", "APCHQ", "ASP Construction", "ISO 9001:2015"]',
-            'tarif_horaire_min': 85.0,
-            'tarif_horaire_max': 150.0
-        },
-        {
-            'nom_entreprise': 'Électricité Industrielle Québec',
-            'numero_rbq': '9876-5432-01',
-            'domaines_expertise': '["Électricité industrielle", "Systèmes mécaniques (CVC)", "Automation"]',
-            'taille_entreprise': 'PME (10-249 employés)',
-            'nom_contact': 'Isabelle Roy',
-            'poste_contact': 'Présidente',
-            'email': 'isabelle@eiqc.ca',
-            'telephone': '418-555-5002',
-            'mot_de_passe': 'demo123',
-            'certifications': '["RBQ: 9876-5432-01", "CEIQ", "Maître électricien", "Formation sécurité CCQ"]',
-            'tarif_horaire_min': 95.0,
-            'tarif_horaire_max': 180.0
-        },
-        {
-            'nom_entreprise': 'Structures Métalliques Bergeron',
-            'numero_rbq': '1357-2468-01',
-            'domaines_expertise': '["Structures d\'acier", "Béton et fondations", "Soudage certifié"]',
-            'taille_entreprise': 'TPE (1-9 employés)',
-            'nom_contact': 'Michel Bergeron',
-            'poste_contact': 'Propriétaire et soudeur certifié',
-            'email': 'michel@structures-bergeron.ca',
-            'telephone': '450-555-6003',
-            'mot_de_passe': 'demo123',
-            'certifications': '["RBQ: 1357-2468-01", "Soudeur certifié CSA W47.1", "Formation grue mobile", "SIMDUT 2015"]',
-            'tarif_horaire_min': 110.0,
-            'tarif_horaire_max': 175.0
-        }
-    ]
-    
-    # Insérer les prestataires
-    for prestataire in prestataires_demo:
-        cursor.execute('''
-            INSERT INTO entreprises_prestataires (
-                nom_entreprise, numero_rbq, domaines_expertise, taille_entreprise, nom_contact,
-                poste_contact, email, telephone, mot_de_passe_hash, certifications,
-                tarif_horaire_min, tarif_horaire_max
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            prestataire['nom_entreprise'], prestataire['numero_rbq'], prestataire['domaines_expertise'], prestataire['taille_entreprise'],
-            prestataire['nom_contact'], prestataire['poste_contact'], prestataire['email'],
-            prestataire['telephone'], hash_password(prestataire['mot_de_passe']),
-            prestataire['certifications'], prestataire['tarif_horaire_min'], prestataire['tarif_horaire_max']
-        ))
+    # Initialiser l'entreprise propriétaire unique
+    initialiser_entreprise_proprietaire(conn)
     
     # Demandes de travaux résidentiels de démonstration
     demandes_demo = [
@@ -610,7 +553,7 @@ def init_database_approbation():
     soumissions_demo = [
         {
             'demande_id': 1,
-            'prestataire_id': 1,  # WebDev Experts
+            'prestataire_id': 1,  # Construction Excellence Québec Inc.
             'titre_soumission': 'Plateforme e-commerce moderne avec React & Node.js',
             'resume_executif': '''Nous proposons le développement d'une plateforme e-commerce complète utilisant les dernières technologies web.''',
             'proposition_technique': '''ARCHITECTURE TECHNIQUE:
@@ -643,7 +586,7 @@ def init_database_approbation():
         },
         {
             'demande_id': 2,
-            'prestataire_id': 2,  # Marketing Digital Pro
+            'prestataire_id': 1,  # Construction Excellence Québec Inc.
             'titre_soumission': 'Stratégie marketing 360° pour le lancement produit',
             'resume_executif': '''Campagne marketing multi-canaux avec approche data-driven pour maximiser le ROI.''',
             'proposition_technique': '''STRATÉGIE PROPOSÉE:
@@ -688,7 +631,7 @@ def init_database_approbation():
     conn.commit()
     conn.close()
     
-    print("Base de données P2B Construction initialisée avec succès!")
+    print("Base de données C2B Construction initialisée avec succès!")
     print("\nDonnées créées:")
     print("   - 3 clients particuliers avec comptes demo")
     print("   - 3 entreprises de construction avec comptes demo")
@@ -698,7 +641,7 @@ def init_database_approbation():
     print("   - Admin: mot de passe 'admin123'")
     print("   - Particuliers: emails ci-dessus + mot de passe 'demo123'")
     print("   - Entrepreneurs: emails ci-dessus + mot de passe 'demo123'")
-    print("\nFonctionnalités du système P2B:")
+    print("\nFonctionnalités du système C2B:")
     print("   - Demandes de travaux résidentiels")
     print("   - Soumissions simplifiées")
     print("   - Évaluations adaptées aux particuliers")

@@ -1,58 +1,58 @@
-# 🏗️ Le B2B de la Construction au Québec
+# 🏗️ PORTAIL C2B DE L'ENTREPRISE
 
-Une plateforme moderne et complète de gestion des soumissions d'entreprises avec workflow d'approbation intelligent, développée avec Streamlit.
+Un portail web Client à Entreprise (C2B) permettant à une entreprise de construction de recevoir et gérer les demandes de soumissions de ses clients, développé avec Streamlit.
 
 ## 📋 Description
 
-Le B2B de la Construction au Québec est une application web avancée spécialisée pour le secteur de la construction qui permet aux donneurs d'ouvrage de publier des projets de construction et de gérer un processus d'approbation structuré pour les soumissions reçues des entrepreneurs certifiés RBQ. La plateforme offre un workflow complet avec évaluations multi-critères, validation RBQ, notifications en temps réel, et gestion des contrats de construction.
+Ce portail de soumissions est une solution **mono-entreprise** conçue pour les entrepreneurs en construction qui souhaitent offrir à leurs clients un portail web professionnel pour demander des soumissions. Contrairement aux marketplaces multi-prestataires, ce système est dédié à **UNE SEULE entreprise propriétaire** qui reçoit toutes les demandes et gère ses soumissions de manière centralisée.
+
+**Modèle d'affaires :** Créez des portails individuels dédiés pour chaque entreprise de construction (entrepreneurs généraux, prestataires spécialisés, etc.)
 
 ## ✨ Fonctionnalités principales
 
-### 🏢 Interface Entreprise Cliente
-- **Publication de demandes de devis** avec cahier des charges détaillé
-- **Gestion des critères d'évaluation** personnalisables
-- **Workflow d'approbation automatisé** par étapes
-- **Comparaison des soumissions** avec notation multi-critères
-- **Messagerie intégrée** avec les prestataires
-- **Suivi des contrats** et de l'avancement des projets
-- **Dashboard analytique** avec KPIs et métriques
+### 👥 Interface Clients (C2B)
+- **Demandes de soumissions personnalisées** avec description détaillée du projet
+- **Soumission de documents** et spécifications techniques
+- **Suivi en temps réel** du statut de leur demande
+- **Évaluation et acceptation** des soumissions reçues
+- **Historique complet** de leurs projets
+- **Communication directe** avec l'entreprise
 
-### 🏗️ Espace Entreprise Prestataire
-- **Recherche d'opportunités** avec filtres avancés
-- **Soumissions structurées** avec proposition technique détaillée
-- **Suivi du processus d'approbation** en temps réel
-- **Portfolio et certifications** pour démontrer l'expertise
-- **Gestion des évaluations** clients et réputation
-- **Dashboard de performance** avec statistiques
-- **Notifications en temps réel** pour nouvelles opportunités
+### 🏗️ Dashboard Entreprise Propriétaire
+- **Réception automatique** de toutes les demandes clients
+- **Création et envoi** de soumissions personnalisées
+- **Notifications d'acceptation** avec numéro de référence
+- **Suivi de tous les projets** et leur statut
+- **Gestion des contrats** et planning des travaux
+- **Statistiques et métriques** de performance
 
-### ⚙️ Panel Administrateur
-- **Gestion complète du workflow** d'approbation
-- **Supervision des entreprises** clientes et prestataires
-- **Analytics avancées** avec rapports détaillés
-- **Configuration des processus** d'évaluation
-- **Audit trail complet** de toutes les actions
-- **Paramétrage système** flexible
+### ⚙️ Configuration Entreprise
+- **Profil entreprise personnalisable** (nom, RBQ, certifications)
+- **Domaines d'expertise** et zones de service
+- **Tarification** et disponibilité
+- **Informations de contact** et coordonnées
+- **Authentification sécurisée** pour l'entreprise propriétaire
 
-## 🔄 Workflow d'Approbation Innovant
+## 🔄 Workflow C2B Simplifié
 
-### Étapes automatisées
-1. 📥 **Réception** : Soumission reçue et enregistrée
-2. 🔍 **Évaluation technique** : Analyse de la proposition
-3. 💰 **Évaluation financière** : Analyse du budget
-4. 📊 **Évaluation globale** : Synthèse et notation finale
-5. ✅ **Décision finale** : Approbation ou rejet
+### Processus direct Client → Entreprise (C2B)
+1. 📝 **Demande client** : Le client soumet sa demande de soumission via le portail
+2. 📥 **Réception automatique** : L'entreprise propriétaire reçoit instantanément la demande
+3. 📋 **Création soumission** : L'entreprise prépare et envoie sa soumission personnalisée  
+4. 👀 **Évaluation client** : Le client examine la soumission reçue
+5. ✅ **Acceptation/Refus** : Le client accepte ou refuse la proposition
+6. 🔔 **Notification** : L'entreprise reçoit la notification avec le numéro de référence
+7. 📞 **Suivi projet** : Contact direct pour finalisation et début des travaux
 
-### Statuts intelligents
-- 📝 **Brouillon** : En cours de rédaction
-- 📤 **Soumise** : Envoyée pour évaluation
-- 📥 **Reçue** : Confirmée par le client
-- 🔍 **En évaluation** : Analyse en cours
-- ⏳ **En approbation** : Décision en cours
-- ✅ **Approuvée** : Acceptée pour négociation
-- ❌ **Rejetée** : Non retenue
-- 💬 **En négociation** : Discussions en cours
-- 🎉 **Acceptée** : Contrat confirmé
+### Statuts de suivi
+- 📝 **Brouillon** : Demande en cours de rédaction par le client
+- 📤 **Soumise** : Demande envoyée à l'entreprise
+- 📋 **Soumission créée** : L'entreprise a préparé sa proposition
+- 👀 **En évaluation** : Le client examine la soumission
+- ✅ **Acceptée** : Soumission approuvée par le client
+- ❌ **Refusée** : Soumission rejetée par le client
+- 🚧 **En cours** : Travaux commencés
+- 🏁 **Terminée** : Projet complété
 
 ## 🚀 Installation et démarrage
 
@@ -60,20 +60,23 @@ Le B2B de la Construction au Québec est une application web avancée spécialis
 - Python 3.8 ou plus récent
 - pip (gestionnaire de paquets Python)
 
-### Méthode rapide (recommandée)
-1. **Cloner ou télécharger le projet**
+### ⚡ Installation nouvelle entreprise (recommandée)
+1. **Télécharger et extraire le projet**
 ```bash
-git clone <url-du-repo>
-cd SoumissionsEntreprises
+# Extraire dans le dossier de votre choix
+cd PortailSoumissions
 ```
 
-2. **Lancer le script de démarrage**
+2. **Configurer pour votre entreprise**
 ```bash
-# Windows
-run.bat
+# Windows - Assistant automatique
+config_nouvelle_entreprise.bat
+```
 
-# Ou manuellement
-py -m streamlit run app.py
+3. **Lancer le portail**
+```bash
+# Windows  
+run.bat
 ```
 
 ### Installation manuelle
@@ -97,28 +100,57 @@ streamlit run app.py
 
 ## 🔐 Comptes de démonstration
 
-### Entreprises Clientes (mot de passe: `demo123`)
-- **marie.dubois@technosolutions.ca** - TechnoSolutions Inc. (PME Tech)
-- **jean.tremblay@commerceplus.ca** - Commerce Plus Ltée (ETI Commerce)
-- **sophie.lavoie@financeconseil.ca** - FinanceConseil Pro (TPE Finance)
+### 🏗️ Entreprise Propriétaire (Configuration C2B par défaut)
+- **Email**: alex@constructionexcellence.ca
+- **Mot de passe**: `entreprise123` ⚠️ **À changer en production**
+- **Entreprise**: Construction Excellence Québec Inc.
+- **RBQ**: 5678-1234-01
 
-### Entreprises Prestataires (mot de passe: `demo123`)
-- **alex@webdevexperts.ca** - WebDev Experts (Développement web)
-- **isabelle@marketingpro.ca** - Marketing Digital Pro (Marketing digital)
-- **michel@conseilmb.ca** - Conseil Stratégique MB (Conseil management)
+### 👥 Clients de Démonstration (mot de passe: `demo123`)
+- **marie.dubois@technosolutions.ca** - TechnoSolutions Inc.
+- **jean.tremblay@commerceplus.ca** - Commerce Plus Ltée  
+- **sophie.lavoie@financeconseil.ca** - FinanceConseil Pro
 
-### Administrateur
+### ⚙️ Administrateur
 - **Mot de passe** : `admin123`
+
+> **Note**: Ces comptes sont pour la démonstration. En production, modifiez tous les mots de passe dans `config_entreprise_unique.py`
+
+## ⚙️ Configuration Personnalisée
+
+### 🎨 Personnalisation pour votre entreprise
+
+Chaque installation est **entièrement personnalisable** dans `config_entreprise_unique.py` :
+
+```python
+ENTREPRISE_PROPRIETAIRE = {
+    "nom_entreprise": "Votre Entreprise Construction Inc.",
+    "numero_rbq": "XXXX-XXXX-XX",  # Votre numéro RBQ
+    "nom_contact": "Votre Nom",
+    "email": "votre.email@entreprise.ca",
+    "telephone": "514-XXX-XXXX",
+    "domaines_expertise": ["Vos spécialités"],
+    "description_entreprise": "Description de votre entreprise...",
+    "mot_de_passe": "VotreMotDePasse123", # À personnaliser !
+}
+```
+
+### 🏗️ Adaptable à tous secteurs construction
+- **Entrepreneurs généraux** (construction complète)
+- **Spécialistes RBQ** (électricité, plomberie, etc.)
+- **Rénovation** (cuisine, salle de bain, sous-sol)
+- **Construction commerciale** (bureaux, magasins)
+- **Services spécialisés** (toiture, isolation, etc.)
 
 ## 📊 Données de démonstration
 
-L'application inclut des données réalistes B2B :
-- ✅ **6 entreprises** avec profils complets (3 clientes + 3 prestataires)
-- ✅ **3 demandes de devis détaillées** avec différents niveaux de complexité
-- ✅ **2 soumissions complètes** avec propositions techniques
-- ✅ **Workflow d'approbation** pré-configuré
-- ✅ **Système de notifications** fonctionnel
-- ✅ **Évaluations multi-critères** configurables
+L'application inclut des données réalistes :
+- ✅ **3 clients entreprises** avec comptes de test 
+- ✅ **1 entreprise construction** (Configuration Excellence Québec Inc.)
+- ✅ **3 demandes projets construction** (salle bain, cuisine, sous-sol)
+- ✅ **2 soumissions détaillées** avec prix et délais
+- ✅ **Workflow acceptation/refus** fonctionnel
+- ✅ **Notifications avec numéros référence** (SE-XXXXXXX)
 
 ## 🛠️ Architecture technique
 
@@ -130,8 +162,8 @@ L'application inclut des données réalistes B2B :
 - **Workflow** : Système d'états avancé avec notifications
 - **Déploiement** : Compatible Render, Heroku, et cloud platforms
 
-### Nouvelles tables B2B
-- **entreprises_clientes** : Profils des entreprises qui demandent des devis
+### Tables du système C2B
+- **entreprises_clientes** : Profils des clients qui demandent des devis
 - **entreprises_prestataires** : Profils des entreprises qui soumissionnent
 - **demandes_devis** : Demandes avec cahier des charges et critères
 - **soumissions** : Propositions avec workflow d'approbation
@@ -177,7 +209,7 @@ L'application inclut des données réalistes B2B :
 - **Audit trail** : Logging complet de toutes les actions
 - **Données sensibles** : Chiffrement des documents confidentiels
 
-## 📈 Fonctionnalités avancées B2B
+## 📈 Fonctionnalités avancées C2B
 
 ### Intelligence artificielle
 - **Scoring automatique** des soumissions selon les critères
@@ -200,13 +232,13 @@ L'application inclut des données réalistes B2B :
 ## 🚨 Nouveautés Version 1.0
 
 ### ✅ Fonctionnalités principales
-- 🏢 **Architecture B2B complète** avec rôles séparés
+- 🏢 **Architecture C2B complète** avec rôles séparés
 - 🔄 **Workflow d'approbation** en 5 étapes personnalisables
 - ⭐ **Système d'évaluation** multi-critères avancé
 - 🔔 **Notifications intelligentes** avec priorités
 - 📊 **Dashboards spécialisés** pour chaque type d'utilisateur
 - 🔍 **Filtres et recherche** avancés pour les opportunités
-- 📎 **Gestion de documents** B2B avec support multi-formats
+- 📎 **Gestion de documents** C2B avec support multi-formats
 - 🎯 **Matching intelligent** entreprises-opportunités
 
 ## 🐛 Dépannage
@@ -265,14 +297,16 @@ py -m streamlit run app.py --server.port 8502
 ## 📞 Support et documentation
 
 ### Démarrage rapide
-- **README** : Ce fichier
-- **Configuration** : `config_approbation.py`
+- **README.md** : Ce fichier  
+- **DEMARRAGE.md** : Guide d'installation détaillé
+- **Configuration** : `config_entreprise_unique.py`
 - **Base de données** : `init_db_approbation.py`
 
 ### Scripts utiles
-- **`run.bat`** : Démarrage automatique Windows
-- **`init_db_approbation.py`** : Initialisation base de données
-- **`app.py`** : Application principale
+- **`run.bat`** : Démarrage automatique Windows optimisé
+- **`config_nouvelle_entreprise.bat`** : Assistant configuration entreprise
+- **`init_db_approbation.py`** : Initialisation mono-entreprise
+- **`app.py`** : Application Streamlit principale
 
 ## 🤝 Contribution
 
@@ -288,15 +322,22 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
-## 🏆 **SoumissionsEntreprises v1.0 - Révolutionnez vos processus d'approbation**
+## 🏆 **PORTAIL C2B DE L'ENTREPRISE v2.0**
 
-**Développé avec ❤️ pour moderniser les relations B2B et optimiser les workflows d'entreprise**
+**Solution Client à Entreprise pour entrepreneurs en construction - Créez des portails dédiés pour vos clients**
 
 ### Statistiques du projet
-- **4,500+ lignes de code** Python optimisé B2B
-- **20+ fonctionnalités** avancées d'approbation
-- **100% fonctionnel** avec workflow complet
-- **Production-ready** pour déploiement entreprise
+- **7,200+ lignes de code** Python optimisé construction
+- **Architecture mono-entreprise** personnalisable
+- **Configuration en 3 clics** via assistant Windows
+- **100% fonctionnel** avec workflow client → entreprise → notification
+- **Production-ready** pour Render, Heroku ou serveur privé
+
+### 🎯 **Votre modèle d'affaires**
+Développez et déployez des portails individuels pour chaque entreprise de construction :
+- **Portail A** : Construction ABC Inc. (ses clients → ses soumissions)  
+- **Portail B** : Électricien XYZ Ltée (ses clients → ses soumissions)
+- **Portail C** : Rénovations 123 (ses clients → ses soumissions)
 
 ### Technologies utilisées
 - ⚡ **Streamlit** - Interface web moderne et responsive
