@@ -1,21 +1,18 @@
 services:
   - type: web
-    name: soumissions-entreprises
-    env: python
-    plan: starter
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      python init_db_approbation.py
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false
+    name: portail-c2b-entreprise
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
       - key: DATA_DIR
         value: /opt/render/project/data
       - key: PYTHONUNBUFFERED
         value: 1
-      - key: STREAMLIT_SERVER_PORT
-        value: $PORT
+      - key: ADMIN_PASSWORD
+        generateValue: true
     disk:
-      name: data-disk
+      name: c2b-data
       mountPath: /opt/render/project/data
-      sizeGB: 10
+      sizeGB: 1

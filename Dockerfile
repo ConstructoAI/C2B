@@ -19,12 +19,12 @@ RUN mkdir -p /app/data
 # Initialiser la base de données
 RUN python init_db_approbation.py
 
-# Exposer le port que Streamlit utilise
-EXPOSE 8501
+# Exposer le port (Render utilise $PORT dynamiquement)
+EXPOSE 10000
 
 # Définir les variables d'environnement
-ENV DATA_DIR=/app/data
+ENV DATA_DIR=/opt/render/project/data
 ENV PYTHONUNBUFFERED=1
 
-# Commande de démarrage
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--browser.gatherUsageStats=false"]
+# Commande de démarrage (utilise $PORT de Render)
+CMD streamlit run app.py --server.port=${PORT:-10000} --server.address=0.0.0.0 --server.headless=true --browser.gatherUsageStats=false
