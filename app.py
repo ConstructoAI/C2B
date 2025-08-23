@@ -418,7 +418,7 @@ def main():
             
             **Contact :**
             
-            📧 sylvainleduc2000@gmail.com  
+            📧 info@constructoai.ca  
             📞 514-820-1972
             """)
             
@@ -566,7 +566,7 @@ def main():
             
             **Contact :**
             
-            📧 sylvainleduc2000@gmail.com  
+            📧 info@constructoai.ca  
             📞 514-820-1972
             """)
             
@@ -3646,17 +3646,17 @@ def page_experts_ia():
     💼 **Installation & Support EXPERTS IA**
     
     Pour l'installation et la configuration personnalisée d'EXPERTS IA :
-    - 📧 **Email** : sylvainleduc2000@gmail.com
+    - 📧 **Email** : info@constructoai.ca
     - 📱 **Téléphone** : 514-820-1972
     - 💬 **Support 24/7** via l'application
     """)
     
     col1, col2 = st.columns(2)
     with col1:
-        st.link_button("🚀 **Accéder à EXPERTS IA**", "https://experts-ai.onrender.com/", use_container_width=True, type="primary")
+        st.link_button("🚀 **Accéder à EXPERTS IA**", "https://b2b.constructoai.ca/", use_container_width=True, type="primary")
     with col2:
         if st.button("📚 **Documentation**", use_container_width=True):
-            st.info("📖 **Guide d'utilisation disponible sur :** https://experts-ai.onrender.com/docs")
+            st.info("📖 **Guide d'utilisation disponible sur :** https://b2b.constructoai.ca/docs")
     
     st.markdown("---")
     st.markdown("### 💬 Testez une question rapidement")
@@ -3717,17 +3717,17 @@ def page_takeoff_ai():
     💼 **Installation & Support TAKEOFF AI**
     
     Pour l'installation et la configuration personnalisée :
-    - 📧 **Email** : sylvainleduc2000@gmail.com
+    - 📧 **Email** : info@constructoai.ca
     - 📱 **Téléphone** : 514-820-1972
     - 💬 **Formation** personnalisée incluse
     """)
     
     col1, col2 = st.columns(2)
     with col1:
-        st.link_button("🚀 **Accéder à TAKEOFF AI**", "https://takeoff-ai.onrender.com/", use_container_width=True, type="primary")
+        st.link_button("🚀 **Accéder à TAKEOFF AI**", "https://takeoff-ai.constructoai.ca/", use_container_width=True, type="primary")
     with col2:
         if st.button("📊 **Exemples d'estimations**", use_container_width=True):
-            st.info("📊 **Voir les démos sur :** https://takeoff-ai.onrender.com/demo")
+            st.info("📊 **Voir les démos sur :** https://takeoff-ai.constructoai.ca/demo")
     
     st.markdown("---")
     
@@ -3796,7 +3796,7 @@ def page_erp_ai():
     💼 **Installation & Support ERP AI**
     
     Pour l'installation et la configuration personnalisée d'ERP AI :
-    - 📧 **Email** : sylvainleduc2000@gmail.com
+    - 📧 **Email** : info@constructoai.ca
     - 📱 **Téléphone** : 514-820-1972
     - 🏗️ **Formation** sur site incluse
     - 💻 **Personnalisation** selon vos processus
@@ -3807,7 +3807,7 @@ def page_erp_ai():
     col1, col2 = st.columns(2)
     with col1:
         if st.button("📞 **Demander une démo**", use_container_width=True, type="primary"):
-            st.success("📧 Contactez sylvainleduc2000@gmail.com ou 514-820-1972 pour planifier votre démo personnalisée")
+            st.success("📧 Contactez info@constructoai.ca ou 514-820-1972 pour planifier votre démo personnalisée")
     with col2:
         if st.button("📋 **Liste d'attente Beta**", use_container_width=True):
             st.info("💡 Inscrivez-vous sur la liste d'attente pour accès prioritaire à ERP AI")
