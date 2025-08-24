@@ -3802,15 +3802,12 @@ def page_erp_ai():
     - 💻 **Personnalisation** selon vos processus
     """)
     
-    st.warning("🔄 **Plateforme en développement** - Versions beta disponibles sur demande")
-    
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("📞 **Demander une démo**", use_container_width=True, type="primary"):
-            st.success("📧 Contactez info@constructoai.ca ou 514-820-1972 pour planifier votre démo personnalisée")
+        st.link_button("🚀 **Accéder à ERP AI**", "https://erp-ai.constructoai.ca/", use_container_width=True, type="primary")
     with col2:
-        if st.button("📋 **Liste d'attente Beta**", use_container_width=True):
-            st.info("💡 Inscrivez-vous sur la liste d'attente pour accès prioritaire à ERP AI")
+        if st.button("📚 **Documentation**", use_container_width=True):
+            st.markdown("**[→ Guide d'utilisation](https://erp-ai.constructoai.ca/docs)**")
     
     # Démo des 24 étapes de chantier
     st.markdown("---")
