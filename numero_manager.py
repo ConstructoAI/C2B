@@ -11,20 +11,22 @@ def get_unified_next_number():
     """
     Génère le prochain numéro de soumission en consultant TOUTES les bases de données
     pour garantir l'unicité entre Heritage et Multi-format
-    
+
     Returns:
         str: Numéro au format YYYY-XXX (ex: 2025-001)
     """
     current_year = datetime.now().year
     max_number = 0
-    
-    # Créer le dossier data s'il n'existe pas
-    os.makedirs('data', exist_ok=True)
+
+    # Déterminer le répertoire de données
+    DATA_DIR = os.getenv('DATA_DIR', 'data')
+    os.makedirs(DATA_DIR, exist_ok=True)
     
     # 1. Vérifier dans soumissions_heritage.db
     try:
-        if os.path.exists('data/soumissions_heritage.db'):
-            conn_heritage = sqlite3.connect('data/soumissions_heritage.db')
+        heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        if os.path.exists(heritage_db_path):
+            conn_heritage = sqlite3.connect(heritage_db_path)
             cursor_heritage = conn_heritage.cursor()
             
             # Créer la table si elle n'existe pas
@@ -66,8 +68,9 @@ def get_unified_next_number():
     
     # 2. Vérifier dans soumissions_multi.db
     try:
-        if os.path.exists('data/soumissions_multi.db'):
-            conn_multi = sqlite3.connect('data/soumissions_multi.db')
+        multi_db_path = os.path.join(DATA_DIR, 'soumissions_multi.db')
+        if os.path.exists(multi_db_path):
+            conn_multi = sqlite3.connect(multi_db_path)
             cursor_multi = conn_multi.cursor()
             
             # Créer la table si elle n'existe pas
@@ -121,8 +124,9 @@ def get_unified_next_number():
     # 3. Vérifier aussi dans bon_commande.db pour éviter tout conflit
     # (au cas où les bons de commande utilisent un format similaire)
     try:
-        if os.path.exists('data/bon_commande.db'):
-            conn_bon = sqlite3.connect('data/bon_commande.db')
+        bon_db_path = os.path.join(DATA_DIR, 'bon_commande.db')
+        if os.path.exists(bon_db_path):
+            conn_bon = sqlite3.connect(bon_db_path)
             cursor_bon = conn_bon.cursor()
             
             # Vérifier si la table existe
@@ -160,17 +164,21 @@ def get_unified_next_number():
 def verify_number_uniqueness(numero):
     """
     Vérifie qu'un numéro n'existe pas déjà dans les bases
-    
+
     Args:
         numero (str): Le numéro à vérifier
-        
+
     Returns:
         bool: True si le numéro est unique, False sinon
     """
+    # Déterminer le répertoire de données
+    DATA_DIR = os.getenv('DATA_DIR', 'data')
+
     # Vérifier dans soumissions_heritage.db
     try:
-        if os.path.exists('data/soumissions_heritage.db'):
-            conn = sqlite3.connect('data/soumissions_heritage.db')
+        heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        if os.path.exists(heritage_db_path):
+            conn = sqlite3.connect(heritage_db_path)
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM soumissions_heritage WHERE numero = ?', (numero,))
             count = cursor.fetchone()[0]
@@ -179,11 +187,12 @@ def verify_number_uniqueness(numero):
                 return False
     except:
         pass
-    
+
     # Vérifier dans soumissions_multi.db
     try:
-        if os.path.exists('data/soumissions_multi.db'):
-            conn = sqlite3.connect('data/soumissions_multi.db')
+        multi_db_path = os.path.join(DATA_DIR, 'soumissions_multi.db')
+        if os.path.exists(multi_db_path):
+            conn = sqlite3.connect(multi_db_path)
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM soumissions WHERE numero_soumission = ?', (numero,))
             count = cursor.fetchone()[0]
@@ -192,7 +201,7 @@ def verify_number_uniqueness(numero):
                 return False
     except:
         pass
-    
+
     return True
 
 def get_safe_unique_number():

@@ -46,8 +46,9 @@ DEFAULT_CONFIG = {
 
 def init_entreprise_table():
     """Initialise la table de configuration d'entreprise"""
-    db_path = 'data/entreprise_config.db'
-    os.makedirs('data', exist_ok=True)
+    db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'entreprise_config.db')
+    data_dir = os.getenv('DATA_DIR', 'data')
+    os.makedirs(data_dir, exist_ok=True)
     
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -78,7 +79,7 @@ def init_entreprise_table():
 def get_entreprise_config():
     """Récupère la configuration actuelle de l'entreprise"""
     try:
-        db_path = 'data/entreprise_config.db'
+        db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'entreprise_config.db')
         
         # Si la base n'existe pas, l'initialiser
         if not os.path.exists(db_path):
@@ -106,7 +107,7 @@ def get_entreprise_config():
 def save_entreprise_config(config_data):
     """Sauvegarde la configuration de l'entreprise"""
     try:
-        db_path = 'data/entreprise_config.db'
+        db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'entreprise_config.db')
         
         # S'assurer que la table existe
         if not os.path.exists(db_path):
@@ -347,17 +348,14 @@ def show_entreprise_config():
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            submitted = st.form_submit_button("💾 Sauvegarder la configuration", 
-                                             type="primary", 
-                                             use_container_width=True)
-        
+            submitted = st.form_submit_button("💾 Sauvegarder la configuration",
+                                             type="primary")
+
         with col2:
-            reset = st.form_submit_button("🔄 Réinitialiser aux valeurs par défaut", 
-                                         use_container_width=True)
-        
+            reset = st.form_submit_button("🔄 Réinitialiser aux valeurs par défaut")
+
         with col3:
-            export = st.form_submit_button("📥 Exporter la configuration", 
-                                         use_container_width=True)
+            export = st.form_submit_button("📥 Exporter la configuration")
     
     # Traitement des actions
     if submitted:

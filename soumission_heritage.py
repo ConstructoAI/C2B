@@ -496,7 +496,7 @@ def create_soumission_form():
                             
                             with col5a:
                                 # Bouton de réinitialisation du texte
-                                if st.button("🔄", key=f"reset_{item_key}", help="Réinitialiser le titre et la description aux valeurs par défaut", use_container_width=True):
+                                if st.button("🔄", key=f"reset_{item_key}", help="Réinitialiser le titre et la description aux valeurs par défaut"):
                                     # Réinitialiser uniquement le titre et la description
                                     if item_key not in st.session_state.soumission_data['items']:
                                         st.session_state.soumission_data['items'][item_key] = {}
@@ -514,7 +514,7 @@ def create_soumission_form():
                             
                             with col5b:
                                 # Bouton pour effacer les montants
-                                if st.button("🗑️", key=f"del_{item_key}", help="Effacer les montants", use_container_width=True):
+                                if st.button("🗑️", key=f"del_{item_key}", help="Effacer les montants"):
                                     qty = 0
                                     unit_price = 0
                                     amount = 0
@@ -556,7 +556,7 @@ def create_soumission_form():
                         )
                     
                     with col_add2:
-                        if st.button("➕ Ajouter", key=f"add_btn_{cat_id}", use_container_width=True):
+                        if st.button("➕ Ajouter", key=f"add_btn_{cat_id}"):
                             if new_item_title:
                                 # Générer un ID unique pour le nouvel item
                                 import uuid
@@ -908,7 +908,7 @@ def create_soumission_form():
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            if st.button("💾 Sauvegarder", use_container_width=True, type="primary"):
+            if st.button("💾 Sauvegarder", type="primary"):
                 if save_soumission():
                     st.success("✅ Soumission sauvegardée avec succès!")
                     st.balloons()
@@ -916,7 +916,7 @@ def create_soumission_form():
                     st.error("❌ Erreur lors de la sauvegarde")
         
         with col2:
-            if st.button("📄 Générer PDF", use_container_width=True):
+            if st.button("📄 Générer PDF"):
                 with st.spinner("Génération du document en cours..."):
                     file_path = generate_pdf()
                     if file_path:
@@ -963,7 +963,7 @@ def create_soumission_form():
                             pass
         
         with col3:
-            if st.button("🔄 Nouvelle soumission", use_container_width=True):
+            if st.button("🔄 Nouvelle soumission"):
                 st.session_state.soumission_data = {
                     'numero': generate_numero_soumission(),
                     'date': datetime.now().strftime('%Y-%m-%d'),
@@ -992,57 +992,110 @@ def generate_numero_soumission():
         from numero_manager import get_safe_unique_number
         return get_safe_unique_number()
     except ImportError:
-        # Fallback sur l'ancienne méthode si le module n'est pas disponible
+        # Fallback amélioré qui vérifie TOUTES les bases de données
         year = datetime.now().year
-        # Créer le dossier data s'il n'existe pas
-        os.makedirs('data', exist_ok=True)
-        # Obtenir le dernier numéro de soumissions_heritage
-        conn_heritage = sqlite3.connect('data/soumissions_heritage.db')
-        cursor_heritage = conn_heritage.cursor()
-        cursor_heritage.execute('''
-            CREATE TABLE IF NOT EXISTS soumissions_heritage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                numero TEXT UNIQUE,
-                data TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        cursor_heritage.execute(f"SELECT numero FROM soumissions_heritage WHERE numero LIKE '{year}-%' ORDER BY numero DESC LIMIT 1")
-        heritage_result = cursor_heritage.fetchone()
-        conn_heritage.close()
-        
-        # Obtenir le dernier numéro de soumissions_multi pour éviter les doublons
         max_num = 0
-        
+
+        # Créer le dossier data s'il n'existe pas
+        data_dir = os.getenv('DATA_DIR', 'data')
+        os.makedirs(data_dir, exist_ok=True)
+
+        # 1. Vérifier dans soumissions_heritage.db
         try:
-            conn_multi = sqlite3.connect('data/soumissions_multi.db')
-            cursor_multi = conn_multi.cursor()
-            cursor_multi.execute(f"SELECT numero_soumission FROM soumissions WHERE numero_soumission LIKE '{year}-%' ORDER BY numero_soumission DESC LIMIT 1")
-            multi_result = cursor_multi.fetchone()
-            conn_multi.close()
-            
-            if multi_result:
-                # Extraire le numéro
-                multi_num = int(multi_result[0].split('-')[1])
-                max_num = max(max_num, multi_num)
+            db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'soumissions_heritage.db')
+            conn_heritage = sqlite3.connect(db_path)
+            cursor_heritage = conn_heritage.cursor()
+            cursor_heritage.execute('''
+                CREATE TABLE IF NOT EXISTS soumissions_heritage (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    numero TEXT UNIQUE,
+                    data TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor_heritage.execute('''
+                SELECT numero FROM soumissions_heritage
+                WHERE numero LIKE ?
+                ORDER BY numero DESC LIMIT 1
+            ''', (f'{year}-%',))
+            heritage_result = cursor_heritage.fetchone()
+            conn_heritage.close()
+
+            if heritage_result and heritage_result[0]:
+                try:
+                    heritage_num = int(heritage_result[0].split('-')[1])
+                    max_num = max(max_num, heritage_num)
+                except:
+                    pass
+        except Exception as e:
+            print(f"Erreur lecture heritage: {e}")
+
+        # 2. Vérifier dans soumissions_multi.db
+        try:
+            multi_db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'soumissions_multi.db')
+            if os.path.exists(multi_db_path):
+                db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'soumissions_multi.db')
+                conn_multi = sqlite3.connect(db_path)
+                cursor_multi = conn_multi.cursor()
+                cursor_multi.execute('''
+                    SELECT numero_soumission FROM soumissions
+                    WHERE numero_soumission LIKE ?
+                    ORDER BY numero_soumission DESC LIMIT 1
+                ''', (f'{year}-%',))
+                multi_result = cursor_multi.fetchone()
+                conn_multi.close()
+
+                if multi_result and multi_result[0]:
+                    try:
+                        multi_num = int(multi_result[0].split('-')[1])
+                        max_num = max(max_num, multi_num)
+                    except:
+                        pass
+        except Exception as e:
+            print(f"Erreur lecture multi: {e}")
+
+        # 3. Vérifier aussi dans bon_commande.db au cas où
+        try:
+            bon_db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'bon_commande.db')
+            if os.path.exists(bon_db_path):
+                db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'bon_commande.db')
+                conn_bon = sqlite3.connect(db_path)
+                cursor_bon = conn_bon.cursor()
+                # Vérifier si la table existe
+                cursor_bon.execute('''
+                    SELECT name FROM sqlite_master
+                    WHERE type='table' AND name='bons_commande'
+                ''')
+                if cursor_bon.fetchone():
+                    cursor_bon.execute('''
+                        SELECT numero_bon FROM bons_commande
+                        WHERE numero_bon LIKE ? AND numero_bon NOT LIKE 'BC-%'
+                        ORDER BY numero_bon DESC LIMIT 1
+                    ''', (f'{year}-%',))
+                    bon_result = cursor_bon.fetchone()
+                    if bon_result and bon_result[0]:
+                        try:
+                            bon_num = int(bon_result[0].split('-')[1])
+                            max_num = max(max_num, bon_num)
+                        except:
+                            pass
+                conn_bon.close()
         except:
             pass
-        
-        if heritage_result:
-            # Extraire le numéro
-            heritage_num = int(heritage_result[0].split('-')[1])
-            max_num = max(max_num, heritage_num)
-        
-        # Retourner le prochain numéro disponible
-        return f"{year}-{str(max_num + 1).zfill(3)}"
+
+        # Retourner le prochain numéro disponible avec vérification d'unicité
+        next_num = max_num + 1
+        return f"{year}-{next_num:03d}"
 
 def save_soumission():
     """Sauvegarde la soumission dans la base de données"""
     try:
         # Créer le dossier data s'il n'existe pas
-        os.makedirs('data', exist_ok=True)
+        data_dir = os.getenv('DATA_DIR', 'data')
+        os.makedirs(data_dir, exist_ok=True)
         
-        conn = sqlite3.connect('data/soumissions_heritage.db')
+        db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'soumissions_heritage.db')
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
         # Vérifier si la table existe et obtenir sa structure
@@ -2147,7 +2200,8 @@ def show_soumission_heritage():
 def get_saved_submission_html(submission_id):
     """Récupère le HTML d'une soumission sauvegardée"""
     try:
-        conn = sqlite3.connect('data/soumissions_heritage.db')
+        db_path = os.path.join(os.getenv('DATA_DIR', 'data'), 'soumissions_heritage.db')
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
         cursor.execute('''

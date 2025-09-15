@@ -15,8 +15,16 @@ class TokenManager:
     """Gestionnaire centralisé pour les tokens"""
     
     def __init__(self):
-        self.backup_dir = '/opt/render/project/data/backups' if os.getenv('RENDER') else 'data/backups'
-        self.data_dir = '/opt/render/project/data' if os.getenv('RENDER') else 'data'
+        # Support pour Hugging Face Spaces et autres environnements
+        if os.getenv('SPACE_ID'):  # Hugging Face
+            self.data_dir = os.getenv('DATA_DIR', '/data/app_data')
+            self.backup_dir = os.getenv('BACKUP_DIR', '/data/backups')
+        elif os.getenv('RENDER'):
+            self.data_dir = '/opt/render/project/data'
+            self.backup_dir = '/opt/render/project/data/backups'
+        else:
+            self.data_dir = os.getenv('DATA_DIR', 'data')
+            self.backup_dir = os.getenv('BACKUP_DIR', 'data/backups')
         self.heritage_db = os.path.join(self.data_dir, 'soumissions_heritage.db')
         self.multi_db = os.path.join(self.data_dir, 'soumissions_multi.db')
         

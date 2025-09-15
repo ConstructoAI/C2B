@@ -12,8 +12,24 @@ import shutil
 from io import BytesIO
 import re
 
-# Module de bons de commande - SUPPRIMÉ
-BON_COMMANDE_AVAILABLE = False
+# Module de bons de commande - ACTIVÉ
+BON_COMMANDE_AVAILABLE = True
+
+# Import du module de bons de commande simple
+try:
+    from bon_commande_simple import show_bon_commande_interface
+    BON_COMMANDE_SIMPLE_AVAILABLE = True
+except ImportError:
+    BON_COMMANDE_SIMPLE_AVAILABLE = False
+    print("Module bon_commande_simple non disponible")
+
+# Import du gestionnaire de fournisseurs
+try:
+    from fournisseurs_manager import show_fournisseurs_interface
+    FOURNISSEURS_AVAILABLE = True
+except ImportError:
+    FOURNISSEURS_AVAILABLE = False
+    print("Module fournisseurs_manager non disponible")
 
 # Import du module de compatibilité
 try:
@@ -52,17 +68,194 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Configuration de la base de données
-if os.getenv('RENDER'):
-    DATA_DIR = '/opt/render/project/data'
-    FILES_DIR = '/opt/render/project/files'
-else:
-    DATA_DIR = os.getenv('DATA_DIR', os.path.join(os.getcwd(), 'data'))
-    FILES_DIR = os.getenv('FILES_DIR', os.path.join(os.getcwd(), 'files'))
-    
-# Créer les dossiers si nécessaire
-os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(FILES_DIR, exist_ok=True)
+# Fonction pour corriger les schémas de bases de données
+def fix_database_schemas():
+    """Corrige automatiquement les schémas de bases de données au démarrage"""
+    import sqlite3
+
+    # Déterminer le répertoire de données
+    data_dir = DATA_DIR
+
+    # 1. Corriger soumissions_heritage.db
+    heritage_db = os.path.join(data_dir, 'soumissions_heritage.db')
+    if os.path.exists(heritage_db):
+        try:
+            conn = sqlite3.connect(heritage_db)
+            cursor = conn.cursor()
+
+            # Vérifier si la table soumissions_heritage existe
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='soumissions_heritage'")
+            if not cursor.fetchone():
+                # Créer la table avec le bon nom
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS soumissions_heritage (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        numero TEXT UNIQUE,
+                        client_nom TEXT,
+                        projet_nom TEXT,
+                        montant_total REAL,
+                        statut TEXT DEFAULT 'en_attente',
+                        token TEXT UNIQUE,
+                        data TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        lien_public TEXT
+                    )
+                ''')
+                conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Erreur correction soumissions_heritage.db: {e}")
+
+    # 2. Corriger bon_commande.db
+    bon_db = os.path.join(data_dir, 'bon_commande.db')
+    if os.path.exists(bon_db):
+        try:
+            conn = sqlite3.connect(bon_db)
+            cursor = conn.cursor()
+
+            # Vérifier si la colonne numero existe
+            cursor.execute("PRAGMA table_info(bons_commande)")
+            columns = [col[1] for col in cursor.fetchall()]
+
+            if 'numero' not in columns:
+                # Recréer la table avec la bonne structure
+                cursor.execute("DROP TABLE IF EXISTS bons_commande")
+                cursor.execute('''
+                    CREATE TABLE bons_commande (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        numero TEXT UNIQUE NOT NULL,
+                        numero_bon TEXT,
+                        date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        fournisseur_nom TEXT,
+                        client_nom TEXT,
+                        projet_nom TEXT,
+                        items_json TEXT,
+                        sous_total REAL,
+                        tps REAL,
+                        tvq REAL,
+                        total REAL,
+                        statut TEXT DEFAULT 'brouillon',
+                        token TEXT UNIQUE,
+                        lien_public TEXT
+                    )
+                ''')
+                conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Erreur correction bon_commande.db: {e}")
+
+    # 3. Créer bons_commande_simple.db si nécessaire
+    bon_simple_db = os.path.join(data_dir, 'bons_commande_simple.db')
+    if not os.path.exists(bon_simple_db):
+        try:
+            conn = sqlite3.connect(bon_simple_db)
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS bons_commande (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    numero TEXT UNIQUE NOT NULL,
+                    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    fournisseur_nom TEXT,
+                    client_nom TEXT,
+                    projet_nom TEXT,
+                    items_json TEXT,
+                    sous_total REAL,
+                    tps REAL,
+                    tvq REAL,
+                    total REAL,
+                    statut TEXT DEFAULT 'brouillon',
+                    token TEXT UNIQUE,
+                    lien_public TEXT
+                )
+            ''')
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Erreur création bons_commande_simple.db: {e}")
+
+    # 4. Créer fournisseurs.db si nécessaire
+    fournisseurs_db = os.path.join(data_dir, 'fournisseurs.db')
+    if not os.path.exists(fournisseurs_db):
+        try:
+            conn = sqlite3.connect(fournisseurs_db)
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS fournisseurs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nom TEXT UNIQUE NOT NULL,
+                    type TEXT DEFAULT 'Fournisseur',
+                    contact_principal TEXT,
+                    telephone TEXT,
+                    cellulaire TEXT,
+                    email TEXT,
+                    adresse TEXT,
+                    ville TEXT,
+                    province TEXT DEFAULT 'Québec',
+                    code_postal TEXT,
+                    actif INTEGER DEFAULT 1,
+                    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            # Ajouter quelques fournisseurs de démonstration
+            cursor.execute('''
+                INSERT OR IGNORE INTO fournisseurs (nom, type, contact_principal, telephone)
+                VALUES
+                ('Matériaux ABC Inc.', 'Fournisseur', 'Jean Tremblay', '514-555-1234'),
+                ('Électricité Pro', 'Sous-traitant', 'Marie Dubois', '514-555-9876'),
+                ('Plomberie Moderne', 'Sous-traitant', 'Pierre Gagnon', '450-555-3456')
+            ''')
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Erreur création fournisseurs.db: {e}")
+
+# Initialisation du stockage persistant pour Hugging Face
+try:
+    from init_persistent_storage import init_persistent_storage
+    storage_config = init_persistent_storage()
+    DATA_DIR = storage_config['data_dir']
+    FILES_DIR = storage_config['files_dir']
+    BACKUP_DIR = storage_config['backup_dir']
+
+    # Afficher un avertissement si le stockage persistant n'est pas activé sur Hugging Face
+    if os.getenv('SPACE_ID') and not DATA_DIR.startswith('/data'):
+        st.warning("""
+        ⚠️ **Stockage Persistant Non Activé**
+
+        Les données seront perdues après redémarrage du Space.
+
+        **Pour activer le stockage persistant :**
+        1. Allez dans Settings de votre Space
+        2. Section "Persistent Storage"
+        3. Cliquez "Add persistent storage"
+        4. Redémarrez le Space
+
+        [Voir la documentation](https://huggingface.co/docs/hub/spaces-storage)
+        """)
+except ImportError:
+    # Fallback si le script d'init n'est pas disponible
+    # Configuration de la base de données
+    if os.getenv('SPACE_ID'):  # Hugging Face Spaces
+        DATA_DIR = os.getenv('DATA_DIR', '/data/app_data')
+        FILES_DIR = os.getenv('FILES_DIR', '/data/app_files')
+        BACKUP_DIR = os.getenv('BACKUP_DIR', '/data/backups')
+    elif os.getenv('RENDER'):
+        DATA_DIR = '/opt/render/project/data'
+        FILES_DIR = '/opt/render/project/files'
+        BACKUP_DIR = '/opt/render/project/data/backups'
+    else:
+        DATA_DIR = os.getenv('DATA_DIR', os.path.join(os.getcwd(), 'data'))
+        FILES_DIR = os.getenv('FILES_DIR', os.path.join(os.getcwd(), 'files'))
+        BACKUP_DIR = os.getenv('BACKUP_DIR', os.path.join(os.getcwd(), 'data', 'backups'))
+
+    # Créer les dossiers si nécessaire
+    os.makedirs(DATA_DIR, exist_ok=True)
+    os.makedirs(FILES_DIR, exist_ok=True)
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+
+# Corriger automatiquement les schémas de bases de données
+fix_database_schemas()
 
 DATABASE_PATH = os.path.join(DATA_DIR, 'soumissions_multi.db')
 
@@ -288,33 +481,58 @@ def get_next_submission_number():
     try:
         from numero_manager import get_safe_unique_number
         return get_safe_unique_number()
-    except ImportError:
-        # Fallback sur l'ancienne méthode si le module n'est pas disponible
-        conn = sqlite3.connect(DATABASE_PATH)
-        cursor = conn.cursor()
-        
+    except ImportError as e:
+        # Si le module n'est pas disponible, créer une version inline qui vérifie TOUTES les bases
         current_year = datetime.now().year
-        
-        cursor.execute('''
-            SELECT numero_soumission 
-            FROM soumissions 
-            WHERE numero_soumission LIKE ? 
-            ORDER BY id DESC 
-            LIMIT 1
-        ''', (f'{current_year}-%',))
-        
-        result = cursor.fetchone()
-        conn.close()
-        
-        if result and result[0]:
-            try:
-                last_number = int(result[0].split('-')[1])
-                next_number = last_number + 1
-            except:
-                next_number = 1
-        else:
-            next_number = 1
-        
+        max_number = 0
+
+        # Vérifier dans soumissions_multi.db
+        try:
+            conn = sqlite3.connect(DATABASE_PATH)
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT numero_soumission
+                FROM soumissions
+                WHERE numero_soumission LIKE ?
+                ORDER BY id DESC
+                LIMIT 1
+            ''', (f'{current_year}-%',))
+            result = cursor.fetchone()
+            conn.close()
+            if result and result[0]:
+                try:
+                    number = int(result[0].split('-')[1])
+                    max_number = max(max_number, number)
+                except:
+                    pass
+        except:
+            pass
+
+        # IMPORTANT: Vérifier AUSSI dans soumissions_heritage.db
+        try:
+            heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+            if os.path.exists(heritage_db_path):
+                conn_heritage = sqlite3.connect(heritage_db_path)
+                cursor_heritage = conn_heritage.cursor()
+                cursor_heritage.execute('''
+                    SELECT numero FROM soumissions_heritage
+                    WHERE numero LIKE ?
+                    ORDER BY numero DESC
+                    LIMIT 1
+                ''', (f'{current_year}-%',))
+                result_heritage = cursor_heritage.fetchone()
+                conn_heritage.close()
+                if result_heritage and result_heritage[0]:
+                    try:
+                        number = int(result_heritage[0].split('-')[1])
+                        max_number = max(max_number, number)
+                    except:
+                        pass
+        except:
+            pass
+
+        # Générer le prochain numéro basé sur le maximum trouvé
+        next_number = max_number + 1
         return f"{current_year}-{next_number:03d}"
 
 def generate_token():
@@ -414,7 +632,8 @@ def get_submission_by_token(token):
     
     # Si pas trouvé, chercher dans Heritage
     try:
-        conn_heritage = sqlite3.connect('data/soumissions_heritage.db')
+        heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        conn_heritage = sqlite3.connect(heritage_db_path)
         cursor_heritage = conn_heritage.cursor()
         
         cursor_heritage.execute('''
@@ -486,7 +705,8 @@ def update_submission_status(token, statut, commentaire=None):
     # Si pas trouvé dans Multi-format, essayer Heritage
     if not updated:
         try:
-            conn_heritage = sqlite3.connect('data/soumissions_heritage.db')
+            heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+            conn_heritage = sqlite3.connect(heritage_db_path)
             cursor_heritage = conn_heritage.cursor()
             
             # Heritage n'a pas les mêmes colonnes, adapter
@@ -540,7 +760,8 @@ def get_all_submissions():
     
     # Récupérer les soumissions Heritage
     try:
-        conn_heritage = sqlite3.connect('data/soumissions_heritage.db')
+        heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        conn_heritage = sqlite3.connect(heritage_db_path)
         cursor_heritage = conn_heritage.cursor()
         
         # D'abord vérifier les colonnes disponibles
@@ -1289,7 +1510,8 @@ def show_heritage_client_view(token):
         import base64
         
         # Récupérer la soumission avec le token
-        conn = sqlite3.connect('data/soumissions_heritage.db')
+        heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        conn = sqlite3.connect(heritage_db_path)
         cursor = conn.cursor()
         
         cursor.execute('''
@@ -1519,6 +1741,139 @@ def generate_pdf_from_html(html_content):
         st.error(f"Erreur lors de la génération du PDF: {e}")
         return None
 
+def show_bon_commande_client_view(token):
+    """Affiche la vue client pour un bon de commande"""
+    try:
+        import sqlite3
+        import json
+        from bon_commande_simple import generate_html, get_company_info, get_db_path
+
+        # Récupérer le bon de commande avec le token
+        db_path = get_db_path()
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT numero, fournisseur_nom, client_nom, projet_nom,
+                   items_json, sous_total, tps, tvq, total, statut
+            FROM bons_commande
+            WHERE token = ?
+        ''', (token,))
+
+        result = cursor.fetchone()
+        conn.close()
+
+        if result:
+            st.title(f"📋 Bon de Commande {result[0]}")
+            st.caption(f"Fournisseur: {result[1]} | Client: {result[2]}")
+
+            # Afficher le statut
+            status_icons = {
+                'brouillon': ('📝', 'Brouillon', 'info'),
+                'envoye': ('📤', 'Envoyé', 'warning'),
+                'approuve': ('✅', 'Approuvé', 'success'),
+                'refuse': ('❌', 'Refusé', 'error')
+            }
+
+            icon, label, type_msg = status_icons.get(result[9], ('❓', 'Inconnu', 'info'))
+
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if result[9] == 'envoye':
+                    st.warning(f"{icon} **Statut:** {label} - En attente de confirmation")
+                elif result[9] == 'approuve':
+                    st.success(f"{icon} **Statut:** {label}")
+                elif result[9] == 'refuse':
+                    st.error(f"{icon} **Statut:** {label}")
+                else:
+                    st.info(f"{icon} **Statut:** {label}")
+
+            with col2:
+                st.metric("Montant Total", f"{result[8]:,.2f} $")
+
+            # Préparer les données pour générer le HTML
+            items = json.loads(result[4]) if result[4] else []
+
+            bon_data = {
+                'numero': result[0],
+                'date': datetime.now().strftime('%d/%m/%Y'),
+                'fournisseur': {
+                    'nom': result[1]
+                },
+                'client': {
+                    'nom': result[2]
+                },
+                'projet': {
+                    'nom': result[3]
+                },
+                'items': items,
+                'totaux': {
+                    'sous_total': result[5],
+                    'tps': result[6],
+                    'tvq': result[7],
+                    'total': result[8]
+                }
+            }
+
+            # Générer et afficher le HTML
+            html_content = generate_html(bon_data)
+
+            # Afficher le HTML dans un iframe
+            from streamlit_compat import show_html
+            show_html(html_content, height=800, scrolling=True)
+
+            # Boutons d'action si en attente
+            if result[9] in ['brouillon', 'envoye']:
+                st.divider()
+                col1, col2, col3 = st.columns([1, 1, 2])
+
+                with col1:
+                    if st.button("✅ Approuver", type="primary", key="approve_bon"):
+                        # Mettre à jour le statut
+                        conn = sqlite3.connect(db_path)
+                        cursor = conn.cursor()
+                        cursor.execute('''
+                            UPDATE bons_commande
+                            SET statut = 'approuve'
+                            WHERE token = ?
+                        ''', (token,))
+                        conn.commit()
+                        conn.close()
+                        st.success("✅ Bon de commande approuvé!")
+                        st.balloons()
+                        rerun()
+
+                with col2:
+                    if st.button("❌ Refuser", type="secondary", key="reject_bon"):
+                        conn = sqlite3.connect(db_path)
+                        cursor = conn.cursor()
+                        cursor.execute('''
+                            UPDATE bons_commande
+                            SET statut = 'refuse'
+                            WHERE token = ?
+                        ''', (token,))
+                        conn.commit()
+                        conn.close()
+                        st.error("❌ Bon de commande refusé")
+                        rerun()
+
+            # Bouton de téléchargement
+            st.divider()
+            st.download_button(
+                label="📥 Télécharger en HTML",
+                data=html_content,
+                file_name=f"bon_commande_{result[0]}.html",
+                mime="text/html"
+            )
+
+        else:
+            st.error("❌ Bon de commande introuvable")
+            st.info("Le lien est peut-être expiré ou incorrect.")
+
+    except Exception as e:
+        st.error(f"Erreur lors du chargement du bon de commande: {str(e)}")
+        st.info("Veuillez vérifier le lien ou contacter l'administrateur.")
+
 def show_client_view(token):
     """Affiche la vue client multi-format"""
     submission = get_submission_by_token(token)
@@ -1578,7 +1933,8 @@ def show_edit_heritage_form_internal(submission_id):
     import sqlite3
     import json
     
-    conn = sqlite3.connect('data/soumissions_heritage.db')
+    heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+    conn = sqlite3.connect(heritage_db_path)
     cursor = conn.cursor()
     
     cursor.execute('''
@@ -1635,10 +1991,10 @@ def show_edit_heritage_form_internal(submission_id):
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            submitted = st.form_submit_button("💾 Sauvegarder", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("💾 Sauvegarder", type="primary")
         
         with col2:
-            if st.form_submit_button("❌ Annuler", use_container_width=True):
+            if st.form_submit_button("❌ Annuler"):
                 del st.session_state['edit_heritage_id']
                 rerun()
         
@@ -1655,7 +2011,8 @@ def show_edit_heritage_form_internal(submission_id):
             
             # Sauvegarder
             try:
-                conn = sqlite3.connect('data/soumissions_heritage.db')
+                heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+                conn = sqlite3.connect(heritage_db_path)
                 cursor = conn.cursor()
                 
                 cursor.execute('''
@@ -1737,10 +2094,10 @@ def show_edit_uploaded_form_internal(submission_id):
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            submitted = st.form_submit_button("💾 Sauvegarder", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("💾 Sauvegarder", type="primary")
         
         with col2:
-            if st.form_submit_button("❌ Annuler", use_container_width=True):
+            if st.form_submit_button("❌ Annuler"):
                 del st.session_state['edit_submission_id']
                 rerun()
         
@@ -1775,7 +2132,8 @@ def delete_submission(submission_id, is_heritage=False):
     """Supprime une soumission (Heritage ou uploadée)"""
     try:
         if is_heritage:
-            conn = sqlite3.connect('data/soumissions_heritage.db')
+            heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+            conn = sqlite3.connect(heritage_db_path)
             cursor = conn.cursor()
             cursor.execute('DELETE FROM soumissions_heritage WHERE id = ?', (submission_id,))
         else:
@@ -1791,10 +2149,7 @@ def delete_submission(submission_id, is_heritage=False):
         return False
 
 # Fonctions du module bon de commande - SUPPRIMÉES
-def show_bon_commande_interface():
-    """Module de bons de commande désactivé"""
-    st.error("❌ Le module de bons de commande a été désactivé")
-    return
+# La fonction show_bon_commande_interface est maintenant importée depuis bon_commande_simple.py
 
 def show_admin_dashboard():
     """Dashboard administrateur multi-format"""
@@ -1836,67 +2191,182 @@ def show_admin_dashboard():
     else:
         # Tabs principaux - bien visibles avec Entreprise en premier
         if has_entreprise_config:
-            tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                "🏢 **ENTREPRISE**",
-                "📊 **TABLEAU DE BORD**", 
-                "➕ **CRÉER SOUMISSION HÉRITAGE**", 
-                "📤 **UPLOADER DOCUMENT**",
-                "💾 **SAUVEGARDES**"
-            ])
+            if BON_COMMANDE_SIMPLE_AVAILABLE and FOURNISSEURS_AVAILABLE:
+                tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+                    "🏢 **ENTREPRISE**",
+                    "📊 **TABLEAU DE BORD**",
+                    "➕ **CRÉER SOUMISSION HÉRITAGE**",
+                    "📋 **CRÉER BON DE COMMANDE**",
+                    "🏢 **FOURNISSEURS**",
+                    "📤 **UPLOADER DOCUMENT**",
+                    "💾 **SAUVEGARDES**",
+                    "📈 **STATISTIQUES**"
+                ])
+            else:
+                tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                    "🏢 **ENTREPRISE**",
+                    "📊 **TABLEAU DE BORD**",
+                    "➕ **CRÉER SOUMISSION HÉRITAGE**",
+                    "📤 **UPLOADER DOCUMENT**",
+                    "💾 **SAUVEGARDES**"
+                ])
         else:
-            tab1, tab2, tab3, tab4 = st.tabs([
-                "📊 **TABLEAU DE BORD**", 
-                "➕ **CRÉER SOUMISSION HÉRITAGE**", 
-                "📤 **UPLOADER DOCUMENT**",
-                "💾 **SAUVEGARDES**"
-            ])
+            if BON_COMMANDE_SIMPLE_AVAILABLE and FOURNISSEURS_AVAILABLE:
+                tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+                    "📊 **TABLEAU DE BORD**",
+                    "➕ **CRÉER SOUMISSION HÉRITAGE**",
+                    "📋 **CRÉER BON DE COMMANDE**",
+                    "🏢 **FOURNISSEURS**",
+                    "📤 **UPLOADER DOCUMENT**",
+                    "💾 **SAUVEGARDES**",
+                    "📈 **STATISTIQUES**"
+                ])
+            else:
+                tab1, tab2, tab3, tab4 = st.tabs([
+                    "📊 **TABLEAU DE BORD**",
+                    "➕ **CRÉER SOUMISSION HÉRITAGE**",
+                    "📤 **UPLOADER DOCUMENT**",
+                    "💾 **SAUVEGARDES**"
+                ])
         
         if has_entreprise_config:
-            with tab1:
-                # Afficher la configuration de l'entreprise
-                show_entreprise_config()
-            
-            with tab2:
-                show_dashboard_content()
-            
-            with tab3:
-                # Importer et afficher le module de création de soumission
-                try:
-                    from soumission_heritage import show_soumission_heritage
-                    show_soumission_heritage()
-                except Exception as e:
-                    st.error(f"Erreur chargement module Heritage: {e}")
-                    import traceback
-                    st.code(traceback.format_exc())
-            
-            with tab4:
-                show_upload_section()
-            
-            with tab5:
-                # Onglet de sauvegarde
-                import backup_manager
-                backup_manager.show_backup_interface()
+            if BON_COMMANDE_SIMPLE_AVAILABLE and FOURNISSEURS_AVAILABLE:
+                with tab1:
+                    # Afficher la configuration de l'entreprise
+                    show_entreprise_config()
+
+                with tab2:
+                    show_dashboard_content()
+
+                with tab3:
+                    # Importer et afficher le module de création de soumission
+                    try:
+                        from soumission_heritage import show_soumission_heritage
+                        show_soumission_heritage()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Heritage: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab4:
+                    # Module de création de bons de commande
+                    try:
+                        show_bon_commande_interface()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Bon de Commande: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab5:
+                    # Module de gestion des fournisseurs
+                    try:
+                        show_fournisseurs_interface()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Fournisseurs: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab6:
+                    show_upload_section()
+
+                with tab7:
+                    # Onglet de sauvegarde
+                    import backup_manager
+                    backup_manager.show_backup_interface()
+
+                with tab8:
+                    # Onglet statistiques
+                    show_statistics_section()
+            else:
+                with tab1:
+                    # Afficher la configuration de l'entreprise
+                    show_entreprise_config()
+
+                with tab2:
+                    show_dashboard_content()
+
+                with tab3:
+                    # Importer et afficher le module de création de soumission
+                    try:
+                        from soumission_heritage import show_soumission_heritage
+                        show_soumission_heritage()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Heritage: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab4:
+                    show_upload_section()
+
+                with tab5:
+                    # Onglet de sauvegarde
+                    import backup_manager
+                    backup_manager.show_backup_interface()
         else:
-            with tab1:
-                show_dashboard_content()
-            
-            with tab2:
-                # Importer et afficher le module de création de soumission
-                try:
-                    from soumission_heritage import show_soumission_heritage
-                    show_soumission_heritage()
-                except Exception as e:
-                    st.error(f"Erreur chargement module Heritage: {e}")
-                    import traceback
-                    st.code(traceback.format_exc())
-            
-            with tab3:
-                show_upload_section()
-            
-            with tab4:
-                # Onglet de sauvegarde
-                import backup_manager
-                backup_manager.show_backup_interface()
+            if BON_COMMANDE_SIMPLE_AVAILABLE and FOURNISSEURS_AVAILABLE:
+                with tab1:
+                    show_dashboard_content()
+
+                with tab2:
+                    # Importer et afficher le module de création de soumission
+                    try:
+                        from soumission_heritage import show_soumission_heritage
+                        show_soumission_heritage()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Heritage: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab3:
+                    # Module de création de bons de commande
+                    try:
+                        show_bon_commande_interface()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Bon de Commande: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab4:
+                    # Module de gestion des fournisseurs
+                    try:
+                        show_fournisseurs_interface()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Fournisseurs: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab5:
+                    show_upload_section()
+
+                with tab6:
+                    # Onglet de sauvegarde
+                    import backup_manager
+                    backup_manager.show_backup_interface()
+
+                with tab7:
+                    # Onglet statistiques
+                    show_statistics_section()
+            else:
+                with tab1:
+                    show_dashboard_content()
+
+                with tab2:
+                    # Importer et afficher le module de création de soumission
+                    try:
+                        from soumission_heritage import show_soumission_heritage
+                        show_soumission_heritage()
+                    except Exception as e:
+                        st.error(f"Erreur chargement module Heritage: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
+
+                with tab3:
+                    show_upload_section()
+
+                with tab4:
+                    # Onglet de sauvegarde
+                    import backup_manager
+                    backup_manager.show_backup_interface()
 
 def show_upload_section():
     """Section d'upload de documents"""
@@ -1967,33 +2437,77 @@ def show_upload_section():
                     st.error(f"❌ Erreur: {str(e)}")
 
 def show_dashboard_content():
-    """Affiche le contenu du dashboard principal"""
-    st.subheader("📊 Tableau de Bord des Soumissions")
-    
+    """Affiche le contenu du dashboard principal unifié"""
+    st.subheader("📊 Tableau de Bord Unifié - Vue d'Ensemble")
+
+    # Récupérer toutes les données
     submissions = get_all_submissions()
-    
-    if submissions:
-        # Statistiques
-        col1, col2, col3, col4, col5 = st.columns(5)
-        
-        total = len(submissions)
-        en_attente = len([s for s in submissions if s['statut'] == 'en_attente'])
-        approuvees = len([s for s in submissions if s['statut'] == 'approuvee'])
-        refusees = len([s for s in submissions if s['statut'] == 'refusee'])
-        
-        # Compter par type
-        pdf_count = len([s for s in submissions if s['file_type'] == '.pdf'])
-        
-        with col1:
-            st.metric("📁 Total", total)
-        with col2:
-            st.metric("⏳ En attente", en_attente)
-        with col3:
-            st.metric("✅ Approuvées", approuvees)
-        with col4:
-            st.metric("❌ Refusées", refusees)
-        with col5:
-            st.metric("📄 PDF", pdf_count)
+
+    # Récupérer les bons de commande si disponible
+    bons_commande = []
+    if BON_COMMANDE_SIMPLE_AVAILABLE:
+        try:
+            conn = sqlite3.connect(os.path.join(DATA_DIR, 'bons_commande_simple.db'))
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT numero, date_creation, fournisseur_nom, projet_nom, total, statut, lien_public, token, client_nom
+                FROM bons_commande
+                ORDER BY date_creation DESC
+            """)
+            bons_commande = cursor.fetchall()
+            conn.close()
+        except:
+            pass
+
+    # Récupérer les fournisseurs si disponible
+    fournisseurs_count = 0
+    if FOURNISSEURS_AVAILABLE:
+        try:
+            conn = sqlite3.connect(os.path.join(DATA_DIR, 'fournisseurs.db'))
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM fournisseurs")
+            fournisseurs_count = cursor.fetchone()[0]
+            conn.close()
+        except:
+            pass
+
+    # Statistiques globales
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("📄 Soumissions", len(submissions) if submissions else 0)
+    with col2:
+        st.metric("📋 Bons de Commande", len(bons_commande))
+    with col3:
+        st.metric("🏢 Fournisseurs", fournisseurs_count)
+    with col4:
+        total_docs = (len(submissions) if submissions else 0) + len(bons_commande)
+        st.metric("📁 Total Documents", total_docs)
+
+    st.divider()
+
+    # Onglets pour différentes vues
+    tab1, tab2, tab3 = st.tabs(["📄 Soumissions", "📋 Bons de Commande", "📊 Vue Combinée"])
+
+    with tab1:
+        st.subheader("Toutes les Soumissions")
+        if submissions:
+            # Statistiques des soumissions
+            col1, col2, col3, col4 = st.columns(4)
+
+            total = len(submissions)
+            en_attente = len([s for s in submissions if s['statut'] == 'en_attente'])
+            approuvees = len([s for s in submissions if s['statut'] == 'approuvee'])
+            refusees = len([s for s in submissions if s['statut'] == 'refusee'])
+
+            with col1:
+                st.metric("📁 Total", total)
+            with col2:
+                st.metric("⏳ En attente", en_attente)
+            with col3:
+                st.metric("✅ Approuvées", approuvees)
+            with col4:
+                st.metric("❌ Refusées", refusees)
         
         st.divider()
         
@@ -2106,8 +2620,149 @@ def show_dashboard_content():
                                 st.session_state['delete_is_heritage'] = False
                             st.session_state['show_delete_confirm'] = True
                             rerun()
-    else:
-        st.info("🚫 Aucune soumission. Uploadez votre premier document!")
+        else:
+            st.info("📭 Aucune soumission pour le moment")
+
+    with tab2:
+        st.subheader("Tous les Bons de Commande")
+        if bons_commande:
+            # Filtres pour bons de commande
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                search_bc = st.text_input("🔍 Rechercher BC", placeholder="Numéro, fournisseur, projet...", key="search_bc")
+            with col2:
+                filtre_statut_bc = st.selectbox("Statut BC", ["Tous", "Brouillon", "Envoyé", "Approuvé", "Refusé"], key="statut_bc")
+
+            # Afficher les bons de commande
+            for bc in bons_commande:
+                numero, date_creation, fournisseur, projet, montant_total, statut, lien_public, token, client = bc
+
+                # Filtrage
+                if search_bc and search_bc.lower() not in f"{numero} {fournisseur} {projet}".lower():
+                    continue
+                if filtre_statut_bc != "Tous":
+                    statut_map = {"Brouillon": "brouillon", "Envoyé": "envoye", "Approuvé": "approuve", "Refusé": "refuse"}
+                    if statut != statut_map.get(filtre_statut_bc, filtre_statut_bc.lower()):
+                        continue
+
+                status_icon_bc = {
+                    'brouillon': '📝',
+                    'envoyé': '📤',
+                    'approuve': '✅',
+                    'refuse': '❌'
+                }.get(statut, '❓')
+
+                status_label_bc = {
+                    'brouillon': 'Brouillon',
+                    'envoyé': 'Envoyé',
+                    'approuve': 'Approuvé',
+                    'refuse': 'Refusé'
+                }.get(statut, statut.title())
+
+                with st.expander(f"{status_icon_bc} **{numero}** - {fournisseur} - ${montant_total:,.2f}"):
+                    col1, col2 = st.columns([2, 1])
+
+                    with col1:
+                        st.write(f"**Fournisseur:** {fournisseur}")
+                        st.write(f"**Client:** {client}")
+                        st.write(f"**Projet:** {projet}")
+
+                    with col2:
+                        st.write(f"**Statut:** {status_icon_bc} {status_label_bc}")
+                        st.write(f"**Date:** {date_creation[:10] if date_creation else 'N/A'}")
+
+                    st.write(f"**Montant:** ${montant_total:,.2f}")
+
+                    # Lien client
+                    if lien_public:
+                        st.write("**Lien client:**")
+                        st.code(lien_public, language=None)
+
+                    # Boutons d'actions
+                    col_btn1, col_btn2 = st.columns(2)
+
+                    with col_btn1:
+                        if st.button(f"👁️ Voir BC", key=f"view_bc_{numero}"):
+                            # Utiliser le token pour afficher le bon de commande
+                            if token:
+                                st.query_params.update({"token": token, "type": "bon_commande"})
+                                st.rerun()
+        else:
+            st.info("📭 Aucun bon de commande pour le moment")
+
+    with tab3:
+        st.subheader("Vue Combinée - Tous les Documents")
+
+        # Créer une liste unifiée de tous les documents
+        all_docs = []
+
+        # Ajouter les soumissions
+        if submissions:
+            for sub in submissions:
+                all_docs.append({
+                    'type': 'Soumission',
+                    'numero': sub['numero'],
+                    'client': sub['client'],
+                    'montant': sub['montant'],
+                    'date': sub['date_creation'][:10] if sub['date_creation'] else 'N/A',
+                    'statut': sub['statut'],
+                    'icon': '📄'
+                })
+
+        # Ajouter les bons de commande
+        if bons_commande:
+            for bc in bons_commande:
+                numero, date_creation, fournisseur, projet, montant_total, statut, lien_public, token, client = bc
+                all_docs.append({
+                    'type': 'Bon de Commande',
+                    'numero': numero,
+                    'client': client if client else fournisseur,  # Utiliser le client ou le fournisseur
+                    'montant': montant_total,
+                    'date': date_creation[:10] if date_creation else '',
+                    'statut': statut,
+                    'icon': '📋',
+                    'lien': lien_public,
+                    'token': token
+                })
+
+        if all_docs:
+            # Trier par date (plus récent en premier)
+            all_docs.sort(key=lambda x: x['date'], reverse=True)
+
+            # Créer un DataFrame pour l'affichage
+            import pandas as pd
+            df = pd.DataFrame(all_docs)
+
+            # Afficher le tableau
+            st.dataframe(
+                df,
+                column_config={
+                    "icon": st.column_config.TextColumn("", width="small"),
+                    "type": st.column_config.TextColumn("Type", width="medium"),
+                    "numero": st.column_config.TextColumn("Numéro", width="medium"),
+                    "client": st.column_config.TextColumn("Client/Fournisseur", width="large"),
+                    "montant": st.column_config.NumberColumn("Montant", format="$%.2f"),
+                    "date": st.column_config.TextColumn("Date", width="small"),
+                    "statut": st.column_config.TextColumn("Statut", width="small")
+                },
+                hide_index=True
+            )
+
+            # Statistiques combinées
+            st.divider()
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                total_montant = sum(doc['montant'] for doc in all_docs)
+                st.metric("💰 Montant Total", f"${total_montant:,.2f}")
+            with col2:
+                st.metric("📊 Total Documents", len(all_docs))
+            with col3:
+                # Calculer le document le plus récent
+                if all_docs:
+                    latest_date = max(doc['date'] for doc in all_docs)
+                    st.metric("📅 Dernier Document", latest_date)
+        else:
+            st.info("📭 Aucun document disponible")
 
 def main():
     """Fonction principale"""
@@ -2159,7 +2814,8 @@ def main():
     # Gérer les actions d'approbation/refus pour Heritage
     if token and type_param == 'heritage' and action:
         import sqlite3
-        conn = sqlite3.connect('data/soumissions_heritage.db')
+        heritage_db_path = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        conn = sqlite3.connect(heritage_db_path)
         cursor = conn.cursor()
         
         if action == 'approve':
@@ -2209,11 +2865,163 @@ def main():
         if type_param == 'heritage':
             # Afficher une soumission Heritage avec le token
             show_heritage_client_view(token)
+        elif type_param == 'bon_commande':
+            # Afficher un bon de commande avec le token
+            show_bon_commande_client_view(token)
         else:
             show_client_view(token)
     else:
         # Admin view - Accès direct sans authentification
         show_admin_dashboard()
+
+def show_statistics_section():
+    """Affiche la section statistiques globales"""
+    st.header("📈 Statistiques Globales")
+
+    # Collecter les statistiques de toutes les bases de données
+    stats = {}
+
+    # Statistiques des soumissions Heritage
+    try:
+        heritage_db = os.path.join(DATA_DIR, 'soumissions_heritage.db')
+        if os.path.exists(heritage_db):
+            conn = sqlite3.connect(heritage_db)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM soumissions_heritage")
+            stats['soumissions_heritage'] = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM soumissions_heritage WHERE statut = 'apprové'")
+            stats['heritage_approuvees'] = cursor.fetchone()[0]
+            conn.close()
+    except:
+        stats['soumissions_heritage'] = 0
+        stats['heritage_approuvees'] = 0
+
+    # Statistiques des soumissions Multi
+    try:
+        multi_db = os.path.join(DATA_DIR, 'soumissions_multi.db')
+        if os.path.exists(multi_db):
+            conn = sqlite3.connect(multi_db)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM soumissions")
+            stats['soumissions_multi'] = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM soumissions WHERE statut = 'apprové'")
+            stats['multi_approuvees'] = cursor.fetchone()[0]
+            conn.close()
+    except:
+        stats['soumissions_multi'] = 0
+        stats['multi_approuvees'] = 0
+
+    # Statistiques des bons de commande
+    try:
+        bon_db = os.path.join(DATA_DIR, 'bon_commande.db')
+        if os.path.exists(bon_db):
+            conn = sqlite3.connect(bon_db)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM bons_commande")
+            stats['bons_commande'] = cursor.fetchone()[0]
+            conn.close()
+        else:
+            stats['bons_commande'] = 0
+    except:
+        stats['bons_commande'] = 0
+
+    # Statistiques des fournisseurs
+    try:
+        fourn_db = os.path.join(DATA_DIR, 'fournisseurs.db')
+        if os.path.exists(fourn_db):
+            conn = sqlite3.connect(fourn_db)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM fournisseurs WHERE actif = 1")
+            stats['fournisseurs_actifs'] = cursor.fetchone()[0]
+            conn.close()
+        else:
+            stats['fournisseurs_actifs'] = 0
+    except:
+        stats['fournisseurs_actifs'] = 0
+
+    # Affichage des métriques
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(
+            "Soumissions Heritage",
+            stats.get('soumissions_heritage', 0),
+            f"{stats.get('heritage_approuvees', 0)} approuvées"
+        )
+
+    with col2:
+        st.metric(
+            "Documents Uploadés",
+            stats.get('soumissions_multi', 0),
+            f"{stats.get('multi_approuvees', 0)} approuvées"
+        )
+
+    with col3:
+        st.metric(
+            "Bons de Commande",
+            stats.get('bons_commande', 0)
+        )
+
+    with col4:
+        st.metric(
+            "Fournisseurs Actifs",
+            stats.get('fournisseurs_actifs', 0)
+        )
+
+    # Graphiques
+    st.markdown("---")
+    st.subheader("📉 Répartition des Documents")
+
+    # Créer un graphique de répartition
+    import plotly.graph_objects as go
+
+    fig = go.Figure(data=[go.Pie(
+        labels=['Soumissions Heritage', 'Documents Uploadés', 'Bons de Commande'],
+        values=[
+            stats.get('soumissions_heritage', 0),
+            stats.get('soumissions_multi', 0),
+            stats.get('bons_commande', 0)
+        ],
+        hole=.3
+    )])
+
+    fig.update_layout(
+        title="Répartition des documents dans le système",
+        height=400
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Informations système
+    st.markdown("---")
+    st.subheader("ℹ️ Informations Système")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.info(f"""
+        **Répertoire de données:** `{DATA_DIR}`
+
+        **Répertoire de fichiers:** `{FILES_DIR}`
+
+        **Environnement:** {'Hugging Face' if os.getenv('SPACE_ID') else 'Render' if os.getenv('RENDER') else 'Local'}
+        """)
+
+    with col2:
+        # Calculer la taille totale des bases de données
+        total_size = 0
+        for db_file in ['soumissions_heritage.db', 'soumissions_multi.db', 'bon_commande.db', 'fournisseurs.db', 'entreprise_config.db']:
+            db_path = os.path.join(DATA_DIR, db_file)
+            if os.path.exists(db_path):
+                total_size += os.path.getsize(db_path)
+
+        st.info(f"""
+        **Taille totale des BDD:** {total_size / (1024*1024):.2f} MB
+
+        **Modules actifs:**
+        - Bons de commande: {'✅' if BON_COMMANDE_SIMPLE_AVAILABLE else '❌'}
+        - Fournisseurs: {'✅' if FOURNISSEURS_AVAILABLE else '❌'}
+        """)
 
 if __name__ == "__main__":
     main()
